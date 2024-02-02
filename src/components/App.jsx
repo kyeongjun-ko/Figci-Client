@@ -2,9 +2,9 @@ import { Routes, Route } from "react-router-dom";
 
 import Onboarding from "./Onboarding";
 import NewProejct from "./NewProject";
-import DiffingResult from "./DiffingResult";
-import ProjectPage from "./ProjectPage";
 import ProjectVersion from "./ProjectVersion";
+import ProjectPage from "./ProjectPage";
+import DiffingResult from "./DiffingResult";
 
 function App() {
   return (

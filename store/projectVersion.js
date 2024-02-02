@@ -1,52 +1,47 @@
 import { create } from "zustand";
+import { devtools } from "zustand/middleware";
 
-const useProjectVersionStore = create(set => {
+const store = set => {
   return {
-    versionInformation: {
-      byDates: {},
-      allDates: [],
-    },
+    byDates: {},
+    allDates: [],
     setVersion: versionList => {
       versionList.forEach(version => {
         const { id, created_at: createdAt, label } = version;
-
-        const createdDate = createdAt.slice(0, 10);
-        const createdTime = createdAt.slice(11, 16);
+        const [createdDate, createdTime] = createdAt.split("T");
 
         return set(state => {
-          if (!state.versionInformation.byDates[createdDate]) {
-            state.versionInformation.byDates[createdDate] = [];
+          if (!state.byDates[createdDate]) {
+            state.byDates[createdDate] = [];
           }
 
-          state.versionInformation = {
-            ...state.versionInformation,
-            byDates: {
-              ...state.versionInformation.byDates,
-              [createdDate]: {
-                ...state.versionInformation.byDates[createdDate],
-                [id]: { label: label || createdTime },
-              },
+          state.byDates = {
+            ...state.byDates,
+            [createdDate]: {
+              ...state.byDates[createdDate],
+              [id]: { label: label || createdTime },
             },
-            allDates: Array.from(
-              new Set([...state.versionInformation.allDates, createdDate]),
-            ),
           };
 
-          return state.versionInformation;
+          state.allDates = Array.from(
+            new Set([...state.allDates, createdDate]),
+          );
+
+          return state;
         });
       });
     },
     clearVersion: () => {
       return set(state => {
-        state.versionInformation = {
-          byDates: {},
-          allDates: [],
-        };
+        state.byDates = {};
+        state.allDates = [];
 
-        return state.versionInformation;
+        return state;
       });
     },
   };
-});
+};
+
+const useProjectVersionStore = create(devtools(store));
 
 export default useProjectVersionStore;
