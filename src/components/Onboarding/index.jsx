@@ -46,7 +46,6 @@ const Wrapper = styled.div`
   justify-content: center;
   align-items: center;
   height: inherit;
-  width: 100%;
   border-left: 2px solid #000;
 
   .description {
@@ -83,6 +82,20 @@ const Container = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+
+  .onboarding-left {
+    flex-grow: 6;
+  }
+
+  .onboarding-right {
+    flex-grow: 4;
+
+    background-color: #f8f9fa;
+
+    img {
+      margin-bottom: 48px;
+    }
+  }
 `;
 
 export default Onboarding;
