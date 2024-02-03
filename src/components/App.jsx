@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import reset, { Reset } from "styled-reset";
+import { Reset } from "styled-reset";
 
 import Onboarding from "./Onboarding";
 import NewProejct from "./NewProject";
