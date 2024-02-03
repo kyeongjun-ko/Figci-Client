@@ -1,7 +1,7 @@
 import styled, { css } from "styled-components";
 
 const BUTTON_SIZES = {
-  md: css`
+  medium: css`
     --button-min-width: 240px;
     --button-min-height: 64px;
     --button-font-size: 1rem;
@@ -9,22 +9,22 @@ const BUTTON_SIZES = {
     --button-border: 2px solid #000;
     --button-radius: 4px;
   `,
-  lg: css`
+  large: css`
     --button-min-width: 420px;
     --button-min-height: 64px;
     --button-font-size: 1rem;
     --button-padding: 12px 24px;
-    --button-border: 4px solid #000;
+    --button-border: 2px solid #000;
     --button-radius: 4px;
   `,
 };
 
 const USING_CASES = {
-  next: css`
+  solid: css`
     --button-color: #fff;
     --button-background-color: #000;
   `,
-  before: css`
+  line: css`
     --button-color: #000;
     --button-background-color: #000;
   `,

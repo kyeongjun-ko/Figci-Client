@@ -23,7 +23,7 @@ function Onboarding() {
         <img
           src="../../assets/onboarding.png"
           alt="figci-onboarding-img"
-          width="300"
+          width="400"
         />
         <h1 className="description main">
           비교할 두 피그마 버전을 알려주시면
@@ -41,16 +41,18 @@ function Onboarding() {
 }
 
 const Wrapper = styled.div`
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: inherit;
+  height: 100%;
+  padding: 80px;
   border-left: 2px solid #000;
 
   .description {
-    padding: 20px;
-    margin-bottom: 20px;
+    padding: 24px;
+    margin-bottom: 24px;
 
     text-align: center;
     line-height: 30px;
@@ -62,9 +64,10 @@ const Wrapper = styled.div`
 
   .description.main {
     padding: 0;
+    margin-bottom: 12px;
 
     color: #000;
-    font-weight: bold;
+    font-weight: 700;
   }
 
   .description.sub {
