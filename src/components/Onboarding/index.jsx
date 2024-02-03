@@ -54,28 +54,27 @@ const Wrapper = styled.div`
     padding: 24px;
     margin-bottom: 24px;
 
-    text-align: center;
-    line-height: 30px;
     font-size: 1.2rem;
     font-style: normal;
     font-weight: 500;
     line-height: 30px;
+    text-align: center;
   }
 
   .description.main {
     padding: 0;
     margin-bottom: 12px;
 
-    color: #000;
     font-weight: 700;
+    color: #000;
   }
 
   .description.sub {
     padding: 0;
 
-    color: #868e96;
     font-size: 1rem;
     line-height: 24px;
+    color: #868e96;
   }
 `;
 
