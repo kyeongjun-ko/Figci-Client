@@ -1,8 +1,24 @@
-import styled from "styled-components";
+import { useEffect, useState } from "react";
 
+import styled from "styled-components";
 import Button from "../shared/Button";
+import { getAuth } from "../../services/auth";
 
 function Onboarding() {
+  const [isClicked, setIsClicked] = useState(false);
+
+  useEffect(() => {
+    if (isClicked) {
+      getAuth();
+    }
+  }, [isClicked]);
+
+  const onClickHandler = ev => {
+    ev.preventDefault();
+
+    setIsClicked(true);
+  };
+
   return (
     <Container>
       <Wrapper className="onboarding-left">
@@ -17,7 +33,9 @@ function Onboarding() {
           <br />
           디자인 화면의 변경사항을 쉽게 보여드려요!
         </span>
-        <Button size="lg">피그마 계정으로 로그인</Button>
+        <Button handleClick={onClickHandler} size="lg">
+          피그마 계정으로 로그인
+        </Button>
       </Wrapper>
       <Wrapper className="onboarding-right">
         <img
