@@ -1,9 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+
+import Modal from "../shared/Modal";
+import Welcome from "../Welcome";
 
 import { getToken } from "../../services/auth";
 
 function NewProject() {
+  const [isModalOpened, setIsModalOpened] = useState(true);
   const navigate = useNavigate();
   const [query] = useSearchParams();
 
@@ -44,7 +48,22 @@ function NewProject() {
     return undefined;
   }, []);
 
-  return <h1>NewProject Page</h1>;
+  function handleClick(ev) {
+    ev.preventDefault();
+
+    setIsModalOpened(false);
+  }
+
+  return (
+    <>
+      <h1>hello</h1>
+      {isModalOpened && (
+        <Modal>
+          <Welcome handleClick={handleClick} />
+        </Modal>
+      )}
+    </>
+  );
 }
 
 export default NewProject;
