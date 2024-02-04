@@ -2,9 +2,8 @@ import generateApiUri from "../components/utils/generateURI";
 
 const clientId = import.meta.env.VITE_FIGMA_CLIENT_ID;
 const clientSecret = import.meta.env.VITE_FIGMA_CLIENT_SECRET;
-
-const apiBaseURI = "https://www.figma.com/";
-const redirectURI = `http://localhost:5173/new`;
+const baseURI = import.meta.env.VITE_FIGMA_BASE_API_URL;
+const redirectURI = import.meta.env.VITE_FIGMA_REDIRECT_URL;
 
 const getAuth = () => {
   const queryParams = {
@@ -15,7 +14,7 @@ const getAuth = () => {
     response_type: "code",
   };
 
-  const API_URI = generateApiUri(apiBaseURI, "oauth", queryParams);
+  const API_URI = generateApiUri(baseURI, "oauth", queryParams);
 
   window.location.href = API_URI;
 };
@@ -29,11 +28,12 @@ const getToken = async authCode => {
     grant_type: "authorization_code",
   };
 
-  const API_URI = generateApiUri(apiBaseURI, "api/oauth/token", queryParams);
+  const API_URI = generateApiUri(baseURI, "api/oauth/token", queryParams);
 
-  fetch(API_URI, { method: "POST" })
-    .then(response => response.json())
-    .catch(() => {});
+  const response = await fetch(API_URI, { method: "POST" });
+  const responseJson = response.json();
+
+  return responseJson;
 };
 
 export { getAuth, getToken };
