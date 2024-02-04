@@ -7,7 +7,7 @@ function Welcome({ handleClick }) {
     <Wrapper>
       <img src="../../assets/welcome_icon.png" alt="welcome-modal-icon" />
       <TextWrapper>
-        <h1 className="title">FigCi를 바로 사용할 수 있어요!</h1>
+        <h1 className="title">Figci를 바로 사용할 수 있어요!</h1>
         <span className="description">
           Figci는 피그마 디자인 파일 링크와 파일의 이전/최신 버전을
           <br />
