@@ -1,44 +1,39 @@
+import generateApiUri from "../components/utils/generateURI";
+
 const clientId = import.meta.env.VITE_FIGMA_CLIENT_ID;
 const clientSecret = import.meta.env.VITE_FIGMA_CLIENT_SECRET;
 
-const baseURI = "https://www.figma.com/";
+const apiBaseURI = "https://www.figma.com/";
+const redirectURI = `http://localhost:5173/new`;
 
-const path = {
-  auth: "oauth?",
-  token: "api/oauth/token?",
-  redirect: "new",
-};
-const scope = "file_variables:write";
-const state = "randomstring";
+const getAuth = () => {
+  const queryParams = {
+    client_id: clientId,
+    redirect_uri: redirectURI,
+    scope: "file_variables:write",
+    state: "randomstring",
+    response_type: "code",
+  };
 
-const redirectURI = `http://localhost:5173/${path.redirect}`;
+  const API_URI = generateApiUri(apiBaseURI, "oauth", queryParams);
 
-const authURI = `${baseURI}${path.auth}client_id=${clientId}&redirect_uri=${redirectURI}&scope=${scope}&state=${state}&response_type=code`;
-const tokenURI = `${baseURI}${path.token}client_id=${clientId}&redirect_uri=${redirectURI}&scope=${scope}&state=${state}&response_type=code`;
-
-const login = () => {
-  window.location.href = authURI;
+  window.location.href = API_URI;
 };
 
-const getToken = async code => {
-  const data = new URLSearchParams();
+const getToken = async authCode => {
+  const queryParams = {
+    client_id: clientId,
+    client_secret: clientSecret,
+    redirect_uri: redirectURI,
+    code: authCode,
+    grant_type: "authorization_code",
+  };
 
-  data.append("client_id", clientId);
-  data.append("client_secret", clientSecret);
-  data.append("redirect_uri", redirectURI);
-  data.append("code", code);
-  data.append("grant_type", "authorization_code");
+  const API_URI = generateApiUri(apiBaseURI, "api/oauth/token", queryParams);
 
-  // 실제 POST 요청 보내기
-  fetch(tokenURI, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: data,
-  })
+  fetch(API_URI, { method: "POST" })
     .then(response => response.json())
     .catch(() => {});
 };
 
-export { login, getToken };
+export { getAuth, getToken };
