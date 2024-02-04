@@ -1,15 +1,32 @@
-import { useLocation, useSearchParams } from "react-router-dom";
-import { getToken, login } from "../../services/auth";
+import { useNavigate, useSearchParams } from "react-router-dom";
+
+import { useEffect } from "react";
+import { getToken } from "../../services/auth";
 
 function NewProejct() {
-  const location = useLocation();
-  const query = location.search;
+  const navigate = useNavigate();
+  const [query] = useSearchParams();
+  const code = query.get("code");
+  const state = query.get("state");
 
-  const [searchParams, setSearchParams] = useSearchParams();
-  const code = searchParams.get("code");
-  const state = searchParams.get("state");
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const accessToken = await getToken(code);
+        console.log("accessToken", JSON.stringify(accessToken));
 
-  console.log("code", getToken(code));
+        localStorage.setItem("FigmaToken", JSON.stringify(accessToken));
+      } catch (error) {
+        console.error("Error fetching token:", error);
+      }
+    };
+
+    if (state === "randomstring") {
+      fetchToken();
+    } else {
+      navigate("/");
+    }
+  }, []);
 
   return <h1>NewProject Page</h1>;
 }
