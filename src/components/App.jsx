@@ -6,17 +6,20 @@ import NewProject from "./NewProject";
 import ProjectVersion from "./ProjectVersion";
 import ProjectPage from "./ProjectPage";
 import DiffingResult from "./DiffingResult";
+import Layout from "./Layout";
 
 function App() {
   return (
     <>
       <Reset />
       <Routes>
-        <Route path="/" element={<Onboarding />} />
-        <Route path="/new" element={<NewProject />} />
-        <Route path="/version" element={<ProjectVersion />} />
-        <Route path="/page" element={<ProjectPage />} />
-        <Route path="/result" element={<DiffingResult />} />
+        <Route path="/" exact element={<Onboarding />} />
+        <Route element={<Layout />}>
+          <Route path="/new" element={<NewProject />} />
+          <Route path="/version" element={<ProjectVersion />} />
+          <Route path="/page" element={<ProjectPage />} />
+          <Route path="/result" element={<DiffingResult />} />
+        </Route>
       </Routes>
     </>
   );
