@@ -10,7 +10,7 @@ const getAuth = () => {
   const queryParams = {
     client_id: clientId,
     redirect_uri: redirectURI,
-    scope: "file_variables:write",
+    scope: "files:read",
     state: oAuthState,
     response_type: "code",
   };
