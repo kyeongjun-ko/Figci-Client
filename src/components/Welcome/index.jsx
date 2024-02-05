@@ -2,10 +2,12 @@ import styled from "styled-components";
 
 import Button from "../shared/Button";
 
+import welcomeIcon from "../../../assets/welcome_icon.png";
+
 function Welcome({ handleClick }) {
   return (
     <Wrapper>
-      <img src="../../assets/welcome_icon.png" alt="welcome-modal-icon" />
+      <img src={welcomeIcon} alt="welcome-modal-icon" />
       <TextWrapper>
         <h1 className="title">Figci를 바로 사용할 수 있어요!</h1>
         <span className="description">

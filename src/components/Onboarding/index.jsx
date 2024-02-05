@@ -5,6 +5,8 @@ import Button from "../shared/Button";
 import ToastPopup from "../shared/Toast";
 
 import { getAuth } from "../../services/auth";
+import figciLogo from "../../../assets/logo_figci.jpg";
+import onBoadringIcon from "../../../assets/onboarding.png";
 
 function Onboarding() {
   const [isClicked, setIsClicked] = useState(false);
@@ -29,7 +31,7 @@ function Onboarding() {
       <Wrapper className="onboarding-left">
         <img
           className="logo-image"
-          src="../../assets/logo_figci.jpg"
+          src={figciLogo}
           alt="figci-logo-img"
           width="150"
         />
@@ -38,16 +40,12 @@ function Onboarding() {
           <br />
           디자인 화면의 변경사항을 쉽게 보여드려요!
         </span>
-        <Button handleClick={onClickButtonHandler} size="lg">
+        <Button handleClick={onClickButtonHandler} size="large">
           피그마 계정으로 로그인
         </Button>
       </Wrapper>
       <Wrapper className="onboarding-right">
-        <img
-          src="../../assets/onboarding.png"
-          alt="figci-onboarding-img"
-          width="400"
-        />
+        <img src={onBoadringIcon} alt="figci-onboarding-img" width="400" />
         <h1 className="description main">
           비교할 두 피그마 버전을 알려주시면
           <br />

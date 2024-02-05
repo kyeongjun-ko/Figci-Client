@@ -1,15 +1,13 @@
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 
+import figciLogo from "../../../assets/logo_figci.jpg";
+
 function Header() {
   return (
     <Wrapper>
       <Link to="/">
-        <img
-          className="logo"
-          src="../../assets/logo_figci.jpg"
-          alt="figci-logo-img"
-        />
+        <img className="logo" src={figciLogo} alt="figci-logo-img" />
       </Link>
       <span className="slogan">
         피그마 버전을 비교해
