@@ -2,15 +2,16 @@ import generateApiUri from "../components/utils/generateURI";
 
 const clientId = import.meta.env.VITE_FIGMA_CLIENT_ID;
 const clientSecret = import.meta.env.VITE_FIGMA_CLIENT_SECRET;
-const baseURI = import.meta.env.VITE_FIGMA_BASE_API_URL;
-const redirectURI = import.meta.env.VITE_FIGMA_REDIRECT_URL;
+const baseURI = import.meta.env.VITE_FIGMA_BASE_API_URI;
+const redirectURI = import.meta.env.VITE_FIGMA_REDIRECT_URI;
+const oAuthState = import.meta.env.VITE_FIGMA_OAUTH_STATE;
 
 const getAuth = () => {
   const queryParams = {
     client_id: clientId,
     redirect_uri: redirectURI,
     scope: "file_variables:write",
-    state: "randomstring",
+    state: oAuthState,
     response_type: "code",
   };
 

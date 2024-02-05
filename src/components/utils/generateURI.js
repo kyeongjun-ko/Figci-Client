@@ -1,5 +1,5 @@
-function generateApiUri(baseUrl, endpoint, queryParams) {
-  const apiUri = new URL(endpoint, baseUrl);
+function generateApiUri(baseUri, endpoint, queryParams) {
+  const apiUri = new URL(endpoint, baseUri);
 
   if (queryParams) {
     Object.keys(queryParams).forEach(key => {
