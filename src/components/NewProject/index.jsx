@@ -6,6 +6,7 @@ import { getToken } from "../../services/auth";
 function NewProject() {
   const navigate = useNavigate();
   const [query] = useSearchParams();
+
   const code = query.get("code");
   const state = query.get("state");
 
@@ -13,19 +14,34 @@ function NewProject() {
     const fetchToken = async () => {
       try {
         const accessToken = await getToken(code);
-        console.log("accessToken", JSON.stringify(accessToken));
 
         localStorage.setItem("FigmaToken", JSON.stringify(accessToken));
-      } catch (error) {
-        console.error("Error fetching token:", error);
+      } catch (err) {
+        navigate("/", {
+          state: {
+            status: 401,
+            message: "로그인에 실패하였습니다.",
+          },
+        });
       }
+
+      return undefined;
     };
 
-    if (state === "randomstring") {
-      fetchToken();
-    } else {
-      navigate("/");
+    if (state !== import.meta.env.VITE_FIGMA_OAUTH_STATE) {
+      navigate("/", {
+        state: {
+          status: 401,
+          message: "로그인에 실패하였습니다.",
+        },
+      });
+
+      return undefined;
     }
+
+    fetchToken();
+
+    return undefined;
   }, []);
 
   return <h1>NewProject Page</h1>;
