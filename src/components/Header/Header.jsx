@@ -31,7 +31,7 @@ const Wrapper = styled.div`
 
   .slogan {
     color: #000000;
-    font-size: 14px;
+    font-size: 0.875rem;
     font-style: normal;
     font-weight: 700;
     line-height: 20px;

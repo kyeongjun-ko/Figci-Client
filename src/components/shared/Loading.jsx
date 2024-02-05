@@ -46,7 +46,7 @@ const TextWrapper = styled.div`
 
     color: #495057;
     text-align: center;
-    font-size: 20px;
+    font-size: 1.25rem;
     font-style: normal;
     font-weight: 500;
     line-height: 30px;
