@@ -33,7 +33,7 @@ const TextWrapper = styled.div`
   .title {
     margin-bottom: 18px;
 
-    color: #000;
+    color: #000000;
     text-align: center;
     font-size: 2rem;
     font-style: normal;

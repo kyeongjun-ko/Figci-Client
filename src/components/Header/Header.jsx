@@ -30,7 +30,7 @@ const Wrapper = styled.div`
   }
 
   .slogan {
-    color: #000;
+    color: #000000;
     font-size: 14px;
     font-style: normal;
     font-weight: 700;

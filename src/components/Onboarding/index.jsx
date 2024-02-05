@@ -75,7 +75,7 @@ const Wrapper = styled.div`
   align-items: center;
   height: 100%;
   padding: 80px;
-  border-left: 2px solid #000;
+  border-left: 2px solid #000000;
 
   .description {
     padding: 24px;
@@ -93,7 +93,7 @@ const Wrapper = styled.div`
     margin-bottom: 12px;
 
     font-weight: 700;
-    color: #000;
+    color: #000000;
   }
 
   .description.sub {

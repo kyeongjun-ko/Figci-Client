@@ -32,10 +32,10 @@ const ModalContainer = styled.div`
   width: fit-content;
   height: fit-content;
   padding: 64px;
-  border: 2px solid #000;
+  border: 2px solid #000000;
   border-radius: 8px;
 
-  background-color: #fff;
+  background-color: #ffffff;
 `;
 
 export default Modal;

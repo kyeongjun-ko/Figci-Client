@@ -6,7 +6,7 @@ const BUTTON_SIZES = {
     --button-min-height: 64px;
     --button-font-size: 1rem;
     --button-padding: 12px 24px;
-    --button-border: 2px solid #000;
+    --button-border: 2px solid #000000;
     --button-radius: 4px;
   `,
   large: css`
@@ -14,19 +14,19 @@ const BUTTON_SIZES = {
     --button-min-height: 64px;
     --button-font-size: 1rem;
     --button-padding: 12px 24px;
-    --button-border: 2px solid #000;
+    --button-border: 2px solid #000000;
     --button-radius: 4px;
   `,
 };
 
 const USING_CASES = {
   solid: css`
-    --button-color: #fff;
-    --button-background-color: #000;
+    --button-color: #ffffff;
+    --button-background-color: #000000;
   `,
   line: css`
-    --button-color: #000;
-    --button-background-color: #000;
+    --button-color: #000000;
+    --button-background-color: #ffffff;
   `,
 };
 
