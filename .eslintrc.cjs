@@ -43,5 +43,6 @@ module.exports = {
     "react/jsx-filename-extension": ["warn", { extensions: [".js", ".jsx"] }],
     "no-param-reassign": 0,
     "no-underscore-dangle": "off",
+    "no-restricted-syntax": ["error", "LabeledStatement", "WithStatement"],
   },
 };

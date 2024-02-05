@@ -1,8 +1,29 @@
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 
 import Button from "../shared/Button";
+import ToastPopup from "../shared/Toast";
+
+import { getAuth } from "../../services/auth";
 
 function Onboarding() {
+  const [isClicked, setIsClicked] = useState(false);
+  const [toast, setToast] = useState(false);
+
+  useEffect(() => {
+    if (isClicked) {
+      getAuth();
+
+      setIsClicked(false);
+    }
+  }, [isClicked]);
+
+  const onClickButtonHandler = ev => {
+    ev.preventDefault();
+
+    setIsClicked(true);
+  };
+
   return (
     <Container>
       <Wrapper className="onboarding-left">
@@ -17,7 +38,9 @@ function Onboarding() {
           <br />
           디자인 화면의 변경사항을 쉽게 보여드려요!
         </span>
-        <Button size="lg">피그마 계정으로 로그인</Button>
+        <Button handleClick={onClickButtonHandler} size="lg">
+          피그마 계정으로 로그인
+        </Button>
       </Wrapper>
       <Wrapper className="onboarding-right">
         <img
@@ -36,6 +59,12 @@ function Onboarding() {
           변경사항을 확인해보세요
         </span>
       </Wrapper>
+      {toast && (
+        <ToastPopup
+          setToast={setToast}
+          message="로그인 하는데 문제가 발생했어요 다시 로그인 해주세요."
+        />
+      )}
     </Container>
   );
 }
