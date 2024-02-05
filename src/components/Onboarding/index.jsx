@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-
 import styled from "styled-components";
 
 import Button from "../shared/Button";
@@ -13,6 +12,8 @@ function Onboarding() {
   useEffect(() => {
     if (isClicked) {
       getAuth();
+
+      setIsClicked(false);
     }
   }, [isClicked]);
 
