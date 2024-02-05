@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { getToken } from "../../services/auth";
 
-function NewProejct() {
+function NewProject() {
   const navigate = useNavigate();
   const [query] = useSearchParams();
   const code = query.get("code");
@@ -31,4 +31,4 @@ function NewProejct() {
   return <h1>NewProject Page</h1>;
 }
 
-export default NewProejct;
+export default NewProject;
