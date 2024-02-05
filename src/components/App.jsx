@@ -1,11 +1,11 @@
 import { Route, Routes } from "react-router-dom";
-
 import { Reset } from "styled-reset";
-import DiffingResult from "./DiffingResult";
-import NewProejct from "./NewProject";
+
 import Onboarding from "./Onboarding";
-import ProjectPage from "./ProjectPage";
+import NewProject from "./NewProject";
 import ProjectVersion from "./ProjectVersion";
+import ProjectPage from "./ProjectPage";
+import DiffingResult from "./DiffingResult";
 
 function App() {
   return (
@@ -13,7 +13,7 @@ function App() {
       <Reset />
       <Routes>
         <Route path="/" element={<Onboarding />} />
-        <Route path="/new" element={<NewProejct />} />
+        <Route path="/new" element={<NewProject />} />
         <Route path="/version" element={<ProjectVersion />} />
         <Route path="/page" element={<ProjectPage />} />
         <Route path="/result" element={<DiffingResult />} />
