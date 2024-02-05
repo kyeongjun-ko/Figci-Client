@@ -3,6 +3,7 @@ import styled from "styled-components";
 
 import Button from "../shared/Button";
 import ToastPopup from "../shared/Toast";
+
 import { getAuth } from "../../services/auth";
 
 function Onboarding() {
