@@ -55,7 +55,7 @@ const Toast = styled.div`
   background-color: #000000;
   color: #ffffff;
   font-family: "Noto Sans KR";
-  font-size: 18px;
+  font-size: 1.125rem;
   text-align: center;
 `;
 

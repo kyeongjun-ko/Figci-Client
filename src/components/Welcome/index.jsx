@@ -1,17 +1,26 @@
-import styled, { keyframes } from "styled-components";
+import styled from "styled-components";
 
-function Loading() {
+import Button from "../shared/Button";
+
+import welcomeIcon from "../../../assets/welcome_icon.png";
+
+function Welcome({ handleClick }) {
   return (
     <Wrapper>
-      <Circle />
+      <img src={welcomeIcon} alt="welcome-modal-icon" />
       <TextWrapper>
-        <h1 className="title">파일을 비교중이에요!</h1>
+        <h1 className="title">Figci를 바로 사용할 수 있어요!</h1>
         <span className="description">
-          파일의 크기와 페이지의 갯수에 따라
+          Figci는 피그마 디자인 파일 링크와 파일의 이전/최신 버전을
           <br />
-          전체 파일을 비교하는 동안 시간이 많이 걸릴 수 있어요.
+          선택해주시면 같은 디자인 파일의 변경사항을 바로 볼 수 있어요!
+          <br />
+          지금 바로 이용해볼까요?
         </span>
       </TextWrapper>
+      <Button handleClick={handleClick} size="large" usingCase="solid">
+        좋아요!
+      </Button>
     </Wrapper>
   );
 }
@@ -53,28 +62,4 @@ const TextWrapper = styled.div`
   }
 `;
 
-const rotate = keyframes`
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-`;
-
-const Circle = styled.div`
-  animation: ${rotate} 2s linear infinite;
-
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  border-top: 6px solid #ced4da;
-  border-right: 6px solid #ced4da;
-  border-bottom: 6px solid #ced4da;
-  border-left: 6px solid #2623fb;
-
-  background-color: transparent;
-`;
-
-export default Loading;
+export default Welcome;
