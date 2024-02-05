@@ -1,12 +1,12 @@
 import styled, { keyframes } from "styled-components";
-
 import { useEffect } from "react";
+import DELAY_TIME from "../constants/timeConstants";
 
 function ToastPopup({ message, setToast, status }) {
   useEffect(() => {
     const timer = setTimeout(() => {
       setToast(false);
-    }, 3000);
+    }, DELAY_TIME.TOAST);
 
     return () => {
       clearTimeout(timer);
@@ -16,7 +16,7 @@ function ToastPopup({ message, setToast, status }) {
   return (
     <Toast>
       {status ? (
-        <p>{`status code: ${status} messags: ${message}`}</p>
+        <p>{`status code: ${status} messages: ${message}`}</p>
       ) : (
         <p>{message}</p>
       )}
@@ -29,6 +29,7 @@ const fadeInUp = keyframes`
     opacity: 0;
     transform: translateY(20px);
   }
+  
   to {
     opacity: 1;
     transform: translateY(0);
