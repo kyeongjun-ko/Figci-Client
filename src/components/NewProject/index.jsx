@@ -1,3 +1,5 @@
+/* eslint-disable consistent-return */
+
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -28,8 +30,6 @@ function NewProject() {
           },
         });
       }
-
-      return undefined;
     };
 
     if (state !== import.meta.env.VITE_FIGMA_OAUTH_STATE) {
@@ -39,13 +39,9 @@ function NewProject() {
           message: "로그인에 실패하였습니다.",
         },
       });
-
-      return undefined;
     }
 
     fetchToken();
-
-    return undefined;
   }, []);
 
   function handleClick(ev) {
