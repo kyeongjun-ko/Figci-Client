@@ -2,14 +2,10 @@ import styled from "styled-components";
 
 function Select({ selectInfo, onInputChange }) {
   return (
-    <StyledSelect>
+    <SelectWrapper>
       <label htmlFor={selectInfo.id}>{selectInfo.label}</label>
       {selectInfo.selects.map(select => (
-        <select
-          key={select.id}
-          id={select.id}
-          onChange={ev => onInputChange(select.id, ev.target.value)}
-        >
+        <select key={select.id} id={select.id} onChange={onInputChange}>
           {select.options.map(option => (
             <option
               key={option.value}
@@ -21,17 +17,21 @@ function Select({ selectInfo, onInputChange }) {
           ))}
         </select>
       ))}
-    </StyledSelect>
+      {selectInfo.description && (
+        <span className="description">{selectInfo.description}</span>
+      )}
+    </SelectWrapper>
   );
 }
 
-const StyledSelect = styled.div`
+const SelectWrapper = styled.div`
   box-sizing: border-box;
   padding-top: 48px;
 
   select {
     width: 400px;
     height: 64px;
+    margin-bottom: 12px;
     padding: 0px 24px;
     display: flex;
 
@@ -44,7 +44,7 @@ const StyledSelect = styled.div`
     background-color: #ffffff;
   }
 
-  label {
+  .label {
     display: block;
     margin-bottom: 12px;
 
@@ -52,6 +52,16 @@ const StyledSelect = styled.div`
     font-style: normal;
     font-weight: 700;
     line-height: 24px;
+  }
+
+  .description {
+    display: block;
+
+    font-size: 1rem;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 24px;
+    color: #868e96;
   }
 `;
 
