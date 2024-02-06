@@ -23,6 +23,7 @@ const getPages = async ({ beforeVersion, afterVersion }) => {
     },
   });
 
+<<<<<<< HEAD
   const responseJson = await response.json();
 
   return responseJson;
@@ -47,3 +48,9 @@ const getPageList = pageList => {
 const getPageDiff = targetPage => {};
 
 export { getPages, getPageList, getPageDiff };
+=======
+  return await response.json();
+};
+
+export default getPages;
+>>>>>>> ✨ [Feat] 버전 정보 입력시 선택 가능 페이지 fetch 요청
