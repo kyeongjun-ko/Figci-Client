@@ -9,15 +9,15 @@ const pageStore = set => {
       const pageIds = [];
 
       pageList.forEach(item => {
-        const { pageId, name, _id } = item;
+        const { pageId, pageName } = item;
 
-        pageIds.push(_id);
+        pageIds.push({ [pageId]: pageName });
 
         set(state => {
           state.byPages = {
             ...state.byPages,
-            [_id]: {
-              name,
+            [pageId]: {
+              name: pageName,
               node_id: pageId,
             },
           };

@@ -23,7 +23,9 @@ const getPages = async ({ beforeVersion, afterVersion }) => {
     },
   });
 
-  return await response.json();
+  const responseJson = await response.json();
+
+  return responseJson;
 };
 
 const getPageList = pageList => {
@@ -42,4 +44,6 @@ const getPageList = pageList => {
   return result;
 };
 
-export { getPages, getPageList };
+const getPageDiff = targetPage => {};
+
+export { getPages, getPageList, getPageDiff };
