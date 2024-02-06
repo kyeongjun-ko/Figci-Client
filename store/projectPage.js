@@ -10,6 +10,7 @@ const pageStore = set => {
 
       pageList.forEach(item => {
 <<<<<<< HEAD
+<<<<<<< HEAD
         const { pageId, pageName } = item;
 
         pageIds.push({ [pageId]: pageName });
@@ -18,10 +19,16 @@ const pageStore = set => {
 
         pageIds.push(_id);
 >>>>>>> ✨ [Feat] 비교 선택 가능한 페이지 상태 정규화
+=======
+        const { pageId, pageName } = item;
+
+        pageIds.push({ [pageId]: pageName });
+>>>>>>> 🎨 [Style] zustand 상태 저장 데이터 형식 변경
 
         set(state => {
           state.byPages = {
             ...state.byPages,
+<<<<<<< HEAD
 <<<<<<< HEAD
             [pageId]: {
               name: pageName,
@@ -29,6 +36,10 @@ const pageStore = set => {
             [_id]: {
               name,
 >>>>>>> ✨ [Feat] 비교 선택 가능한 페이지 상태 정규화
+=======
+            [pageId]: {
+              name: pageName,
+>>>>>>> 🎨 [Style] zustand 상태 저장 데이터 형식 변경
               node_id: pageId,
             },
           };
