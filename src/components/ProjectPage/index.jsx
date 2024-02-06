@@ -5,35 +5,33 @@ import Modal from "../shared/Modal";
 import Loading from "../shared/Loading";
 import Title from "../shared/Title";
 import Select from "../shared/Select";
-import Footer from "../shared/Footer";
+import BottomNavigator from "../shared/BottomNavigator";
 
 function ProjectPage() {
   const [isLoaded, setIsLoaded] = useState(true);
 
   return (
-    <StyledContent>
+    <>
       {!isLoaded && (
         <Modal>
           <Loading />
         </Modal>
       )}
-      <div className="content">
+      <StyledContent>
         <Title />
         <Select />
-      </div>
-      <Footer />
-    </StyledContent>
+      </StyledContent>
+      <BottomNavigator />
+    </>
   );
 }
 
 const StyledContent = styled.div`
-  .content {
-    box-sizing: border-box;
+  box-sizing: border-box;
 
-    width: 100%;
-    height: 100%;
-    padding: 64px;
-  }
+  width: 100%;
+  height: 100%;
+  padding: 64px;
 `;
 
 export default ProjectPage;

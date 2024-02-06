@@ -3,29 +3,27 @@ import styled from "styled-components";
 
 import Title from "../shared/Title";
 import Select from "../shared/Select";
-import Footer from "../shared/Footer";
+import BottomNavigator from "../shared/BottomNavigator";
 
 function ProjectVersion() {
   return (
-    <StyledContent>
-      <div className="content">
+    <>
+      <ContentsWrapper>
         <Title />
         <Select />
         <Select />
-      </div>
-      <Footer />
-    </StyledContent>
+      </ContentsWrapper>
+      <BottomNavigator />
+    </>
   );
 }
 
-const StyledContent = styled.div`
-  .content {
-    box-sizing: border-box;
+const ContentsWrapper = styled.div`
+  box-sizing: border-box;
 
-    width: 100%;
-    height: 100%;
-    padding: 64px;
-  }
+  width: 100%;
+  height: 100%;
+  padding: 64px;
 `;
 
 export default ProjectVersion;

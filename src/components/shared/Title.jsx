@@ -2,18 +2,18 @@ import styled, { css } from "styled-components";
 
 function Title({ title }) {
   return (
-    <StyledTitle>
-      <h2 className="step">STEP {title.step}</h2>
+    <TitleWrapper>
+      {title.step && <h2 className="step">STEP {title.step}</h2>}
       <h2 className="title">
         {title.firstSentence}
         <br />
         {title.secondSentence}
       </h2>
-    </StyledTitle>
+    </TitleWrapper>
   );
 }
 
-const StyledTitle = styled.div`
+const TitleWrapper = styled.div`
   h2 {
     font-size: 2rem;
     font-style: normal;

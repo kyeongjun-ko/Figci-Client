@@ -8,7 +8,7 @@ import Modal from "../shared/Modal";
 import Welcome from "../Welcome";
 import Title from "../shared/Title";
 import Input from "../shared/Input";
-import Footer from "../shared/Footer";
+import BottomNavigator from "../shared/BottomNavigator";
 
 import { getToken } from "../../services/auth";
 
@@ -49,11 +49,11 @@ function NewProject() {
     fetchToken();
   }, []);
 
-  function handleClick(ev) {
+  const handleClick = ev => {
     ev.preventDefault();
 
     setIsModalOpened(false);
-  }
+  };
 
   const handleInputChange = ev => {
     setInputValue(ev.target.value);
@@ -87,25 +87,25 @@ function NewProject() {
   };
 
   return (
-    <StyledContent>
+    <>
       {isModalOpened && (
         <Modal>
           <Welcome handleClick={handleClick} />
         </Modal>
       )}
-      <div className="content">
+      <ContentsWrapper>
         <Title title={contents.title} />
         <Input
           inputInfo={contents.inputInfo}
           onInputChange={handleInputChange}
         />
-      </div>
-      <Footer buttons={contents.buttons} />
-    </StyledContent>
+      </ContentsWrapper>
+      <BottomNavigator buttons={contents.buttons} />
+    </>
   );
 }
 
-const StyledContent = styled.div`
+const ContentsWrapper = styled.div`
   .content {
     box-sizing: border-box;
 
