@@ -14,9 +14,9 @@ function Select({ selectInfo, onInputChange }) {
             <option
               key={option.value}
               value={option.value}
-              defaultValue={option.defaultValue === option.value}
+              defaultValue={option.defaultValue}
             >
-              {option.text}
+              {option.value}
             </option>
           ))}
         </select>

@@ -1,4 +1,4 @@
-import styled, { css } from "styled-components";
+import styled from "styled-components";
 
 import Button from "./Button";
 
@@ -8,7 +8,7 @@ function Footer({ buttons }) {
       {buttons.map(button => (
         <Button
           key={button.text}
-          onClick={button.handleClick}
+          handleClick={button.handleClick}
           size="medium"
           usingCase={button.usingCase}
         >
