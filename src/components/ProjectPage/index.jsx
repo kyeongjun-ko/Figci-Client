@@ -17,16 +17,16 @@ function ProjectPage() {
           <Loading />
         </Modal>
       )}
-      <StyledContent>
+      <ContentsWrapper>
         <Title />
         <Select />
-      </StyledContent>
+      </ContentsWrapper>
       <BottomNavigator />
     </>
   );
 }
 
-const StyledContent = styled.div`
+const ContentsWrapper = styled.div`
   box-sizing: border-box;
 
   width: 100%;
