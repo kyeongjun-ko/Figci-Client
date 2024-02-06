@@ -1,90 +1,105 @@
+<<<<<<< HEAD
 import { useState } from "react";
 <<<<<<< HEAD
 import styled from "styled-components";
 =======
+=======
+import { useEffect, useState } from "react";
+>>>>>>> ✨ [Feat] 버전정보 페이지 & Page 페이지 라우터 연결 및 zustand 상태 동기화
 import { useNavigate } from "react-router-dom";
 >>>>>>> ✨ [Feat] 버전 정보 입력시 선택 가능 페이지 fetch 요청
 
 import Button from "../shared/Button";
-import { getPages, getPageList} from "../../services/pages";
 import Modal from "../shared/Modal";
 import Loading from "../shared/Loading";
+<<<<<<< HEAD
 import Title from "../shared/Title";
 import Select from "../shared/Select";
 import BottomNavigator from "../shared/BottomNavigator";
 
 import useProjectVersionStore from "../../../store/projectVersion";
+=======
+import { getPageDiff } from "../../services/pages";
+import usePageListStore from "../../../store/projectPage";
+import usePageStatusStore from "../../../store/projectInit";
+>>>>>>> ✨ [Feat] 버전정보 페이지 & Page 페이지 라우터 연결 및 zustand 상태 동기화
 
 function ProjectPage() {
   const [isLoaded, setIsLoaded] = useState(true);
-  const [beforeDate, setBeforeDate] = useState("");
-  const [afterDate, setAfterDate] = useState("");
-  const [beforeVersion, setBeforeVersion] = useState("");
-  const [afterVersion, setAfterVersion] = useState("");
-
+  const [pageList, setPageList] = useState([]);
+  const [selectPage, setSelectPage] = useState("");
   const navigate = useNavigate();
-  const { allDates, byDates } = useProjectVersionStore(state => state);
 
-  const onChange1 = ev => {
+  const onChangeHandler = ev => {
     const date = ev.target.value;
 
-    setBeforeDate(date);
+    setSelectPage(date);
   };
 
-  const onChange2 = ev => {
-    const version = ev.target.value;
-
-    setBeforeVersion(version);
+  const updatePageId = newPageId => {
+    usePageStatusStore.getState().setStatus({ nodeId: newPageId });
   };
 
-  const onChange3 = ev => {
-    const date = ev.target.value;
-
-    setAfterDate(date);
+  const getStatus = () => {
+    return usePageStatusStore.getState().status;
   };
 
-  const onChange4 = ev => {
-    const version = ev.target.value;
-
-    setAfterVersion(version);
-  };
-
-  function dateFilter() {
-    if (beforeDate) {
-      return allDates.filter(
-        dateString => new Date(dateString) < new Date(beforeDate),
-      );
-    }
-
-    return false;
-  }
   const onClickSubmitButton = async ev => {
     ev.preventDefault();
 
-    const result = {
+    const { fileKey, beforeVersion, afterVersion } = getStatus();
+
+    updatePageId(selectPage);
+
+    const targetPage = {
+      fileKey,
       beforeVersion,
       afterVersion,
+      nodeId: selectPage,
     };
 
-    const pageList = getPageList(await getPages(result));
+    console.log("targetPage", targetPage);
+    console.log("node업데이트 statue", usePageStatusStore.getState().status);
 
-    usePageListStore.getState().setPages(pageList);
+    try {
+      setIsLoaded(false);
 
-    navigate("/version", {
-      state: {
-        pages: pageList,
-      },
-    });
-  }
+      const result = getPageDiff(targetPage);
+
+      console.log("페이지 렌더링 리스트", await JSON.parse(result));
+
+      setIsLoaded(true);
+      navigate("/result");
+    } catch (err) {
+      console.log(err);
+
+      setIsLoaded(false);
+    }
+  };
+
+  useEffect(() => {
+    const storedPageList = usePageListStore.getState().allPages;
+
+    if (storedPageList) {
+      setPageList(storedPageList);
+    } else {
+      console.log("pageList 로딩 실패");
+    }
+  }, []);
 
   return (
+<<<<<<< HEAD
     <>
 <<<<<<< HEAD
+=======
+    <form>
+>>>>>>> ✨ [Feat] 버전정보 페이지 & Page 페이지 라우터 연결 및 zustand 상태 동기화
       {!isLoaded && (
         <Modal>
           <Loading />
         </Modal>
       )}
+<<<<<<< HEAD
       <ContentsWrapper>
         <Title />
         <Select />
@@ -155,6 +170,29 @@ function ProjectPage() {
       </form>
 >>>>>>> ✨ [Feat] 버전 정보 입력시 선택 가능 페이지 fetch 요청
     </>
+=======
+      <label htmlFor="selectPage">
+        페이지선택
+        <select name="selectPage" id="selectPage" onChange={onChangeHandler}>
+          {pageList &&
+            pageList.map(Object.entries).map(([nodeId, nodeName]) => (
+              <option key={nodeId} value={nodeId}>
+                {nodeName}
+              </option>
+            ))}
+        </select>
+      </label>
+      <Button
+        disabled={
+          (getStatus().beforeVersion && getStatus().afterVersion) === false
+        }
+        handleClick={onClickSubmitButton}
+        size="medium"
+      >
+        페이지 선택
+      </Button>
+    </form>
+>>>>>>> ✨ [Feat] 버전정보 페이지 & Page 페이지 라우터 연결 및 zustand 상태 동기화
   );
 }
 
