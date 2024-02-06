@@ -18,9 +18,13 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Button from "../shared/Button";
+<<<<<<< HEAD
 import useProjectVersionStore from "../../../store/projectVersion";
 import getPages from "../../services/pages";
 >>>>>>> ✨ [Feat] 버전 정보 입력시 선택 가능 페이지 fetch 요청
+=======
+import { getPages, getPageList} from "../../services/pages";
+>>>>>>> ✨ [Feat] page 페이지 이동 전 페이지 목록 글로벌 상태 저장
 import Modal from "../shared/Modal";
 import Loading from "../shared/Loading";
 <<<<<<< HEAD
@@ -34,6 +38,8 @@ import { getPageDiff } from "../../services/pages";
 import usePageListStore from "../../../store/projectPage";
 import usePageStatusStore from "../../../store/projectInit";
 >>>>>>> ✨ [Feat] 버전정보 페이지 & Page 페이지 라우터 연결 및 zustand 상태 동기화
+
+import useProjectVersionStore from "../../../store/projectVersion";
 
 function ProjectPage() {
   const [isLoaded, setIsLoaded] = useState(true);
@@ -252,14 +258,18 @@ function ProjectPage() {
   const onClickSubmitButton = async ev => {
     ev.preventDefault();
 
-    const result = await getPages({
+    const result = {
       beforeVersion,
       afterVersion,
-    });
+    };
+
+    const pageList = getPageList(await getPages(result));
+
+    usePageListStore.getState().setPages(pageList);
 
     navigate("/version", {
       state: {
-        pages: result,
+        pages: pageList,
       },
     });
   }
