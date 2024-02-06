@@ -26,4 +26,20 @@ const getPages = async ({ beforeVersion, afterVersion }) => {
   return await response.json();
 };
 
-export default getPages;
+const getPageList = pageList => {
+  const result = [];
+
+  pageList.forEach(page => {
+    const pageStatus = {
+      pageId: page.pageId,
+      name: page.name,
+      _id: page._id,
+    };
+
+    result.push(pageStatus);
+  });
+
+  return result;
+};
+
+export { getPages, getPageList };
