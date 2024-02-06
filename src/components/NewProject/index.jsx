@@ -1,5 +1,4 @@
 /* eslint-disable consistent-return */
-
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import styled, { css } from "styled-components";
@@ -11,10 +10,12 @@ import Input from "../shared/Input";
 import BottomNavigator from "../shared/BottomNavigator";
 
 import Button from "../shared/Button";
-import getVersions from "../../services/versions";
 import { getToken } from "../../services/auth";
+import getVersions from "../../services/versions";
+import getFileKeyFromURI from "../utils/getFileKeyFromURI";
 
 import useProjectVersionStore from "../../../store/projectVersion";
+import usePageStatusStore from "../../../store/projectInit";
 
 function NewProject() {
   const [isModalOpened, setIsModalOpened] = useState(true);
@@ -22,8 +23,6 @@ function NewProject() {
   const [uriText, setUriText] = useState("");
   const navigate = useNavigate();
   const [query] = useSearchParams();
-
-  const { setVersion } = useProjectVersionStore(state => state);
 
   const code = query.get("code");
   const state = query.get("state");
@@ -91,14 +90,25 @@ function NewProject() {
     buttons: [
       { text: "다음", usingCase: "solid", handleClick: handleSubmitInputValue },
     ],
+  }
+
+  const updateFileKey = newFileKey => {
+    usePageStatusStore.getState().setStatus({ fileKey: newFileKey });
+  };
+
+  const updateVersions = newVersions => {
+    useProjectVersionStore.getState().setVersion(newVersions);
   };
 
   const onClickSubmitButton = async e => {
     e.preventDefault();
 
-    setVersion(await getVersions(uriText));
+    const fileKey = getFileKeyFromURI(uriText);
 
-    navigate("/page");
+    updateFileKey(fileKey);
+    updateVersions(await getVersions(fileKey));
+
+    navigate("/version");
   };
 
   return (
