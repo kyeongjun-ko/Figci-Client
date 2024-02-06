@@ -6,26 +6,20 @@ import styled, { css } from "styled-components";
 
 import Modal from "../shared/Modal";
 import Welcome from "../Welcome";
-<<<<<<< HEAD
 import Title from "../shared/Title";
 import Input from "../shared/Input";
 import BottomNavigator from "../shared/BottomNavigator";
 
-=======
 import Button from "../shared/Button";
 import getVersions from "../../services/versions";
->>>>>>> ✨ [Feat] 프로젝트 URL 입력시 버전 정보 fetch 요청
 import { getToken } from "../../services/auth";
 
 import useProjectVersionStore from "../../../store/projectVersion";
 
 function NewProject() {
   const [isModalOpened, setIsModalOpened] = useState(true);
-<<<<<<< HEAD
   const [inputValue, setInputValue] = useState("");
-=======
   const [uriText, setUriText] = useState("");
->>>>>>> ✨ [Feat] 프로젝트 URL 입력시 버전 정보 fetch 요청
   const navigate = useNavigate();
   const [query] = useSearchParams();
 
@@ -114,7 +108,6 @@ function NewProject() {
           <Welcome handleClick={handleClick} />
         </Modal>
       )}
-<<<<<<< HEAD
       <ContentsWrapper>
         <Title title={contents.title} />
         <Input
@@ -123,7 +116,6 @@ function NewProject() {
         />
       </ContentsWrapper>
       <BottomNavigator buttons={contents.buttons} />
-=======
       <form>
         <Input
           value={uriText}
@@ -133,12 +125,10 @@ function NewProject() {
           페이지 입력
         </Button>
       </form>
->>>>>>> ✨ [Feat] 프로젝트 URL 입력시 버전 정보 fetch 요청
     </>
   );
 }
 
-<<<<<<< HEAD
 const ContentsWrapper = styled.div`
   .content {
     box-sizing: border-box;
@@ -147,11 +137,10 @@ const ContentsWrapper = styled.div`
     height: 100%;
     padding: 64px;
   }
-=======
+`
 const Input = styled.input`
   width: 600px;
   height: 50px;
->>>>>>> ✨ [Feat] 프로젝트 URL 입력시 버전 정보 fetch 요청
-`;
+`
 
 export default NewProject;
