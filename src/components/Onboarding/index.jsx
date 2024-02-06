@@ -6,7 +6,7 @@ import ToastPopup from "../shared/Toast";
 
 import { getAuth } from "../../services/auth";
 import figciLogo from "../../../assets/logo_figci.jpg";
-import onBoadringIcon from "../../../assets/onboarding.png";
+import onBoardingIcon from "../../../assets/onboarding.png";
 
 function Onboarding() {
   const [isClicked, setIsClicked] = useState(false);
@@ -45,7 +45,7 @@ function Onboarding() {
         </Button>
       </Wrapper>
       <Wrapper className="onboarding-right">
-        <img src={onBoadringIcon} alt="figci-onboarding-img" width="400" />
+        <img src={onBoardingIcon} alt="figci-onboarding-img" width="400" />
         <h1 className="description main">
           비교할 두 피그마 버전을 알려주시면
           <br />
