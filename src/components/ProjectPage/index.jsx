@@ -6,13 +6,14 @@ import { useNavigate } from "react-router-dom";
 >>>>>>> ✨ [Feat] 버전 정보 입력시 선택 가능 페이지 fetch 요청
 
 import Button from "../shared/Button";
-import useProjectVersionStore from "../../../store/projectVersion";
-import getPages from "../../services/pages";
+import { getPages, getPageList} from "../../services/pages";
 import Modal from "../shared/Modal";
 import Loading from "../shared/Loading";
 import Title from "../shared/Title";
 import Select from "../shared/Select";
 import BottomNavigator from "../shared/BottomNavigator";
+
+import useProjectVersionStore from "../../../store/projectVersion";
 
 function ProjectPage() {
   const [isLoaded, setIsLoaded] = useState(true);
@@ -60,14 +61,18 @@ function ProjectPage() {
   const onClickSubmitButton = async ev => {
     ev.preventDefault();
 
-    const result = await getPages({
+    const result = {
       beforeVersion,
       afterVersion,
-    });
+    };
+
+    const pageList = getPageList(await getPages(result));
+
+    usePageListStore.getState().setPages(pageList);
 
     navigate("/version", {
       state: {
-        pages: result,
+        pages: pageList,
       },
     });
   }
