@@ -2,10 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Button from "../shared/Button";
-import useProjectVersionStore from "../../../store/projectVersion";
-import getPages from "../../services/pages";
+import { getPages, getPageList} from "../../services/pages";
 import Modal from "../shared/Modal";
 import Loading from "../shared/Loading";
+
+import useProjectVersionStore from "../../../store/projectVersion";
 
 function ProjectPage() {
   const [isLoaded, setIsLoaded] = useState(true);
@@ -53,14 +54,18 @@ function ProjectPage() {
   const onClickSubmitButton = async ev => {
     ev.preventDefault();
 
-    const result = await getPages({
+    const result = {
       beforeVersion,
       afterVersion,
-    });
+    };
+
+    const pageList = getPageList(await getPages(result));
+
+    usePageListStore.getState().setPages(pageList);
 
     navigate("/version", {
       state: {
-        pages: result,
+        pages: pageList,
       },
     });
   }
