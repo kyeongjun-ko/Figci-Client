@@ -2,9 +2,9 @@ import styled from "styled-components";
 
 import Button from "./Button";
 
-function Footer({ buttons }) {
+function BottomNavigator({ buttons }) {
   return (
-    <StyledFooter>
+    <BottomNavWrapper>
       {buttons.map(button => (
         <Button
           key={button.text}
@@ -15,11 +15,11 @@ function Footer({ buttons }) {
           {button.text}
         </Button>
       ))}
-    </StyledFooter>
+    </BottomNavWrapper>
   );
 }
 
-const StyledFooter = styled.footer`
+const BottomNavWrapper = styled.div`
   box-sizing: border-box;
   position: absolute;
   bottom: 0px;
@@ -31,6 +31,10 @@ const StyledFooter = styled.footer`
   align-items: flex-end;
   padding: 24px 40px;
   border-top: 2px solid;
+
+  button {
+    margin-left: 16px;
+  }
 `;
 
-export default Footer;
+export default BottomNavigator;
