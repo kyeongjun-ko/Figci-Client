@@ -2,8 +2,10 @@ import styled from "styled-components";
 
 function Input({ inputInfo, onInputChange }) {
   return (
-    <StyledInput>
-      <label htmlFor={inputInfo.id}>{inputInfo.label}</label>
+    <InputWrapper>
+      <label htmlFor={inputInfo.id} className="label">
+        {inputInfo.label}
+      </label>
       {inputInfo.inputs.map(input => (
         <input
           key={input.id}
@@ -12,18 +14,21 @@ function Input({ inputInfo, onInputChange }) {
           onChange={onInputChange}
         />
       ))}
-      {inputInfo.description && <span>{inputInfo.description}</span>}
-    </StyledInput>
+      {inputInfo.description && (
+        <span className="description">{inputInfo.description}</span>
+      )}
+    </InputWrapper>
   );
 }
 
-const StyledInput = styled.div`
+const InputWrapper = styled.div`
   box-sizing: border-box;
   padding-top: 48px;
 
   input {
     width: 560px;
     height: 64px;
+    margin-bottom: 12px;
     padding: 0px 24px;
     display: flex;
 
@@ -36,7 +41,7 @@ const StyledInput = styled.div`
     background-color: #ffffff;
   }
 
-  label {
+  .label {
     display: block;
     margin-bottom: 12px;
 
@@ -44,6 +49,16 @@ const StyledInput = styled.div`
     font-style: normal;
     font-weight: 700;
     line-height: 24px;
+  }
+
+  .description {
+    display: block;
+
+    font-size: 1rem;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 24px;
+    color: #868e96;
   }
 `;
 
