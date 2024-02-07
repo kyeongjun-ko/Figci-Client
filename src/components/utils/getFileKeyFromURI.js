@@ -3,7 +3,7 @@ function getFileKeyFromURI(projectURI) {
   const urlPathList = urlObject.pathname.split("/").filter(part => part !== "");
   const fileKey = urlPathList[1];
 
-  return fileKey.toString();
+  return fileKey;
 }
 
 export default getFileKeyFromURI;
