@@ -1,65 +1,43 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-import { useState } from "react";
-<<<<<<< HEAD
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import styled from "styled-components";
-=======
-=======
-=======
->>>>>>> ✨ [Feat] 버전 정보 입력시 선택 가능 페이지 fetch 요청
-=======
->>>>>>> ✨ [Feat] 버전정보 페이지 & Page 페이지 라우터 연결 및 zustand 상태 동기화
-import { useEffect, useState } from "react";
->>>>>>> ✨ [Feat] 버전정보 페이지 & Page 페이지 라우터 연결 및 zustand 상태 동기화
-import { useNavigate } from "react-router-dom";
->>>>>>> ✨ [Feat] 버전 정보 입력시 선택 가능 페이지 fetch 요청
-
 import Button from "../shared/Button";
-=======
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-
-import Button from "../shared/Button";
-<<<<<<< HEAD
-import useProjectVersionStore from "../../../store/projectVersion";
-import getPages from "../../services/pages";
->>>>>>> ✨ [Feat] 버전 정보 입력시 선택 가능 페이지 fetch 요청
-=======
-import { getPages, getPageList} from "../../services/pages";
->>>>>>> ✨ [Feat] page 페이지 이동 전 페이지 목록 글로벌 상태 저장
-=======
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-
-import Button from "../shared/Button";
->>>>>>> ✨ [Feat] 버전정보 페이지 & Page 페이지 라우터 연결 및 zustand 상태 동기화
 import Modal from "../shared/Modal";
-import Loading from "../shared/Loading";
-<<<<<<< HEAD
 import Title from "../shared/Title";
 import Select from "../shared/Select";
 import BottomNavigator from "../shared/BottomNavigator";
-
-import useProjectVersionStore from "../../../store/projectVersion";
-=======
+import Loading from "../shared/Loading";
 import { getPageDiff } from "../../services/pages";
 import usePageListStore from "../../../store/projectPage";
 import usePageStatusStore from "../../../store/projectInit";
-<<<<<<< HEAD
->>>>>>> ✨ [Feat] 버전정보 페이지 & Page 페이지 라우터 연결 및 zustand 상태 동기화
-=======
-<<<<<<< HEAD
->>>>>>> ✨ [Feat] 버전정보 페이지 & Page 페이지 라우터 연결 및 zustand 상태 동기화
-
-import useProjectVersionStore from "../../../store/projectVersion";
 
 function ProjectPage() {
   const [isLoaded, setIsLoaded] = useState(true);
-<<<<<<< HEAD
   const [pageList, setPageList] = useState([]);
   const [selectPage, setSelectPage] = useState("");
   const navigate = useNavigate();
+
+  const store = [
+    {
+      "106:8": {
+        name: "nodeType",
+        node_id: "106:8",
+      },
+    },
+    {
+      "5:5": {
+        name: "Page 2",
+        node_id: "5:5",
+      },
+    },
+    {
+      "0:1": {
+        name: "Page 1",
+        node_id: "0:1",
+      },
+    },
+  ];
 
   const onChangeHandler = ev => {
     const date = ev.target.value;
@@ -89,17 +67,13 @@ function ProjectPage() {
       nodeId: selectPage,
     };
 
-    console.log("targetPage", targetPage);
-    console.log("node업데이트 statue", usePageStatusStore.getState().status);
-
     try {
       setIsLoaded(false);
 
-      const result = getPageDiff(targetPage);
-
-      console.log("페이지 렌더링 리스트", await JSON.parse(result));
+      getPageDiff(targetPage);
 
       setIsLoaded(true);
+
       navigate("/result");
     } catch (err) {
       console.log(err);
@@ -108,305 +82,88 @@ function ProjectPage() {
     }
   };
 
-  useEffect(() => {
-    const storedPageList = usePageListStore.getState().allPages;
-
-    if (storedPageList) {
-      setPageList(storedPageList);
-    } else {
-      console.log("pageList 로딩 실패");
-    }
-  }, []);
-
-  return (
-<<<<<<< HEAD
-    <>
-<<<<<<< HEAD
-=======
-    <form>
->>>>>>> ✨ [Feat] 버전정보 페이지 & Page 페이지 라우터 연결 및 zustand 상태 동기화
-      {!isLoaded && (
-        <Modal>
-          <Loading />
-        </Modal>
-      )}
-<<<<<<< HEAD
-      <ContentsWrapper>
-        <Title />
-        <Select />
-      </ContentsWrapper>
-      <BottomNavigator />
-=======
-      <h1>ProjectPage</h1>
-      <form>
-        {!isLoaded && (
-          <Modal>
-            <Loading />
-          </Modal>
-        )}
-        <div>
-          <label htmlFor="beforeDate">
-            이전 날짜
-            <select name="beforeDate" id="beforeDate" onChange={onChange1}>
-              {allDates.map(date => (
-                <option key={date} value={date}>
-                  {date}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label htmlFor="beforeVersion">
-            이전 버전
-            <select name="beforeVersion" id="beforeVersion" onChange={onChange2}>
-              {beforeDate &&
-                Object.entries(byDates[beforeDate]).map(([key, value]) => (
-                  <option key={key} value={key}>
-                    {value.label}
-                  </option>
-                ))}
-            </select>
-          </label>
-        </div>
-        <div>
-          <label htmlFor="afterDate">
-            이후 날짜
-            <select name="afterDate" id="afterDate" onChange={onChange3}>
-              {dateFilter() &&
-                dateFilter().map(date => (
-                  <option key={date} value={date}>
-                    {date}
-                  </option>
-                ))}
-            </select>
-          </label>
-          <label htmlFor="afterVersion">
-            이후 버전
-            <select name="afterVersion" id="afterVersion" onChange={onChange4}>
-              {afterDate &&
-                Object.entries(byDates[afterDate]).map(([key, value]) => (
-                  <option key={key} value={key}>
-                    {value.label}
-                  </option>
-                ))}
-            </select>
-          </label>
-        </div>
-        <Button
-          disabled={(beforeVersion && afterVersion) === false}
-          handleClick={onClickSubmitButton}
-          size="medium"
-        >
-          페이지 입력
-        </Button>
-      </form>
->>>>>>> ✨ [Feat] 버전 정보 입력시 선택 가능 페이지 fetch 요청
-    </>
-=======
-      <label htmlFor="selectPage">
-        페이지선택
-        <select name="selectPage" id="selectPage" onChange={onChangeHandler}>
-          {pageList &&
-            pageList.map(Object.entries).map(([nodeId, nodeName]) => (
-              <option key={nodeId} value={nodeId}>
-                {nodeName}
-              </option>
-            ))}
-        </select>
-      </label>
-      <Button
-        disabled={
-          (getStatus().beforeVersion && getStatus().afterVersion) === false
-        }
-        handleClick={onClickSubmitButton}
-        size="medium"
-      >
-        페이지 선택
-      </Button>
-    </form>
-<<<<<<< HEAD
->>>>>>> ✨ [Feat] 버전정보 페이지 & Page 페이지 라우터 연결 및 zustand 상태 동기화
-=======
-=======
-  const [beforeDate, setBeforeDate] = useState("");
-  const [afterDate, setAfterDate] = useState("");
-  const [beforeVersion, setBeforeVersion] = useState("");
-  const [afterVersion, setAfterVersion] = useState("");
-
-=======
-
-function ProjectPage() {
-  const [isLoaded, setIsLoaded] = useState(true);
-  const [pageList, setPageList] = useState([]);
-  const [selectPage, setSelectPage] = useState("");
->>>>>>> ✨ [Feat] 버전정보 페이지 & Page 페이지 라우터 연결 및 zustand 상태 동기화
-  const navigate = useNavigate();
-
-  const onChangeHandler = ev => {
-    const date = ev.target.value;
-
-    setSelectPage(date);
-  };
-
-  const updatePageId = newPageId => {
-    usePageStatusStore.getState().setStatus({ nodeId: newPageId });
-  };
-
-  const getStatus = () => {
-    return usePageStatusStore.getState().status;
-  };
-
-  const onClickSubmitButton = async ev => {
+  const handleClickPrevButton = ev => {
     ev.preventDefault();
 
-    const { fileKey, beforeVersion, afterVersion } = getStatus();
-
-    updatePageId(selectPage);
-
-    const targetPage = {
-      fileKey,
-      beforeVersion,
-      afterVersion,
-      nodeId: selectPage,
-    };
-
-    console.log("targetPage", targetPage);
-    console.log("node업데이트 statue", usePageStatusStore.getState().status);
-
-    try {
-      setIsLoaded(false);
-
-      const result = getPageDiff(targetPage);
-
-      console.log("페이지 렌더링 리스트", await JSON.parse(result));
-
-      setIsLoaded(true);
-      navigate("/result");
-    } catch (err) {
-      console.log(err);
-
-      setIsLoaded(false);
-    }
+    navigate("/version");
   };
 
   useEffect(() => {
-    const storedPageList = usePageListStore.getState().allPages;
+    setPageList(store);
 
-    if (storedPageList) {
-      setPageList(storedPageList);
-    } else {
-      console.log("pageList 로딩 실패");
-    }
+    // const storedPageList = usePageListStore.getState().allPages;
+
+    // if (storedPageList) {
+    //   setPageList(storedPageList);
+    // } else {
+    // }
   }, []);
 
+  const contents = {
+    title: {
+      step: "03",
+      firstSentence: "비교할 페이지를",
+      secondSentence: "선택해주세요.",
+    },
+    selectInfo: {
+      id: "project",
+      label: "비교 페이지 선택",
+      selects: [
+        {
+          id: "pageSelection",
+          value: "pageSelection",
+          defaultValue: "비교할 페이지 선택",
+          options:
+            pageList &&
+            pageList.map(Object.entries).map(([nodeId, nodeName]) => (
+              <option key={nodeId} value={nodeId}>
+                {nodeName}
+              </option>
+            )),
+        },
+      ],
+      description: "이전 버전과 비교할 수 있는 페이지만 보여요!",
+    },
+    buttons: [
+      {
+        text: "이전",
+        usingCase: "line",
+        handleClick: handleClickPrevButton,
+      },
+      {
+        text: "비교하기",
+        usingCase: "solid",
+        handleClick: onClickSubmitButton,
+        disabled:
+          (getStatus().beforeVersion && getStatus().afterVersion) === false,
+      },
+    ],
+  };
+
   return (
-<<<<<<< HEAD
     <>
-      <h1>ProjectPage</h1>
-      <form>
-        {!isLoaded && (
-          <Modal>
-            <Loading />
-          </Modal>
-        )}
-        <div>
-          <label htmlFor="beforeDate">
-            이전 날짜
-            <select name="beforeDate" id="beforeDate" onChange={onChange1}>
-              {allDates.map(date => (
-                <option key={date} value={date}>
-                  {date}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label htmlFor="beforeVersion">
-            이전 버전
-            <select name="beforeVersion" id="beforeVersion" onChange={onChange2}>
-              {beforeDate &&
-                Object.entries(byDates[beforeDate]).map(([key, value]) => (
-                  <option key={key} value={key}>
-                    {value.label}
-                  </option>
-                ))}
-            </select>
-          </label>
-        </div>
-        <div>
-          <label htmlFor="afterDate">
-            이후 날짜
-            <select name="afterDate" id="afterDate" onChange={onChange3}>
-              {dateFilter() &&
-                dateFilter().map(date => (
-                  <option key={date} value={date}>
-                    {date}
-                  </option>
-                ))}
-            </select>
-          </label>
-          <label htmlFor="afterVersion">
-            이후 버전
-            <select name="afterVersion" id="afterVersion" onChange={onChange4}>
-              {afterDate &&
-                Object.entries(byDates[afterDate]).map(([key, value]) => (
-                  <option key={key} value={key}>
-                    {value.label}
-                  </option>
-                ))}
-            </select>
-          </label>
-        </div>
-        <Button
-          disabled={(beforeVersion && afterVersion) === false}
-          handleClick={onClickSubmitButton}
-          size="medium"
-        >
-          페이지 입력
-        </Button>
-      </form>
-    </>
->>>>>>> ✨ [Feat] 버전 정보 입력시 선택 가능 페이지 fetch 요청
-<<<<<<< HEAD
->>>>>>> ✨ [Feat] 버전 정보 입력시 선택 가능 페이지 fetch 요청
-=======
-=======
-    <form>
       {!isLoaded && (
         <Modal>
           <Loading />
         </Modal>
       )}
-      <label htmlFor="selectPage">
-        페이지선택
-        <select name="selectPage" id="selectPage" onChange={onChangeHandler}>
-          {pageList &&
-            pageList.map(Object.entries).map(([nodeId, nodeName]) => (
-              <option key={nodeId} value={nodeId}>
-                {nodeName}
-              </option>
-            ))}
-        </select>
-      </label>
-      <Button
-        disabled={
-          (getStatus().beforeVersion && getStatus().afterVersion) === false
-        }
-        handleClick={onClickSubmitButton}
-        size="medium"
-      >
-        페이지 선택
-      </Button>
-    </form>
->>>>>>> ✨ [Feat] 버전정보 페이지 & Page 페이지 라우터 연결 및 zustand 상태 동기화
->>>>>>> ✨ [Feat] 버전정보 페이지 & Page 페이지 라우터 연결 및 zustand 상태 동기화
+      <ProjectPageWrapper>
+        <Title title={contents.title} />
+        <Select
+          selectInfo={contents.selectInfo}
+          onInputChange={onChangeHandler}
+        />
+        <BottomNavigator buttons={contents.buttons} />
+      </ProjectPageWrapper>
+    </>
   );
 }
 
-const ContentsWrapper = styled.div`
+const ProjectPageWrapper = styled.div`
   box-sizing: border-box;
 
   width: 100%;
   height: 100%;
   padding: 64px;
 `;
-
 export default ProjectPage;
