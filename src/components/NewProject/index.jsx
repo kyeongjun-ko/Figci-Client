@@ -9,30 +9,69 @@ import Title from "../shared/Title";
 import Input from "../shared/Input";
 import BottomNavigator from "../shared/BottomNavigator";
 
-import Button from "../shared/Button";
 import { getToken } from "../../services/auth";
 import getVersions from "../../services/versions";
 import getFileKeyFromURI from "../utils/getFileKeyFromURI";
+import getAuthFromURI from "../utils/getAuthFromURI";
 
 import useProjectVersionStore from "../../../store/projectVersion";
 import usePageStatusStore from "../../../store/projectInit";
+import useAuthStore from "../../../store/projectAuth";
 
 function NewProject() {
   const [isModalOpened, setIsModalOpened] = useState(true);
   const [inputValue, setInputValue] = useState("");
-  const [uriText, setUriText] = useState("");
   const navigate = useNavigate();
   const [query] = useSearchParams();
 
   const code = query.get("code");
   const state = query.get("state");
 
+  const updateFileKey = newFileKey => {
+    usePageStatusStore.getState().setStatus({ fileKey: newFileKey });
+  };
+
+  const updateVersions = newVersions => {
+    useProjectVersionStore.getState().setVersion(newVersions);
+  };
+
+  const handleModalClick = ev => {
+    ev.preventDefault();
+
+    setIsModalOpened(false);
+  };
+
+  const handleInputChange = ev => {
+    setInputValue(ev.target.value);
+  };
+
+  const onClickSubmitButton = async ev => {
+    ev.preventDefault();
+
+    const fileKey = getFileKeyFromURI(inputValue);
+
+    updateFileKey(fileKey);
+    updateVersions(await getVersions(fileKey));
+
+    navigate("/version");
+  };
+
+  const setAuthStore = authParams => {
+    useAuthStore.getState().setAuth(authParams);
+  };
+
   useEffect(() => {
+    setAuthStore(getAuthFromURI());
+
     const fetchToken = async () => {
       try {
-        const accessToken = await getToken(code);
+        const authCode = code || useAuthStore.getState().auth.code;
 
-        localStorage.setItem("FigmaToken", JSON.stringify(accessToken));
+        if (authCode) {
+          const accessToken = await getToken(code);
+
+          localStorage.setItem("FigmaToken", JSON.stringify(accessToken));
+        }
       } catch (err) {
         navigate("/", {
           state: {
@@ -55,22 +94,6 @@ function NewProject() {
     fetchToken();
   }, []);
 
-  const handleClick = ev => {
-    ev.preventDefault();
-
-    setIsModalOpened(false);
-  };
-
-  const handleInputChange = ev => {
-    setInputValue(ev.target.value);
-  };
-
-  const handleSubmitInputValue = ev => {
-    ev.preventDefault();
-
-    navigate("/version");
-  };
-
   const contents = {
     title: {
       step: "01",
@@ -88,69 +111,37 @@ function NewProject() {
       ],
     },
     buttons: [
-      { text: "다음", usingCase: "solid", handleClick: handleSubmitInputValue },
+      { text: "다음", usingCase: "solid", handleClick: onClickSubmitButton },
     ],
-  }
-
-  const updateFileKey = newFileKey => {
-    usePageStatusStore.getState().setStatus({ fileKey: newFileKey });
-  };
-
-  const updateVersions = newVersions => {
-    useProjectVersionStore.getState().setVersion(newVersions);
-  };
-
-  const onClickSubmitButton = async e => {
-    e.preventDefault();
-
-    const fileKey = getFileKeyFromURI(uriText);
-
-    updateFileKey(fileKey);
-    updateVersions(await getVersions(fileKey));
-
-    navigate("/version");
   };
 
   return (
     <>
       {isModalOpened && (
         <Modal>
-          <Welcome handleClick={handleClick} />
+          <Welcome handleClick={handleModalClick} />
         </Modal>
       )}
       <ContentsWrapper>
-        <Title title={contents.title} />
-        <Input
-          inputInfo={contents.inputInfo}
-          onInputChange={handleInputChange}
-        />
+        <form>
+          <Title title={contents.title} />
+          <Input
+            inputInfo={contents.inputInfo}
+            onInputChange={handleInputChange}
+          />
+        </form>
       </ContentsWrapper>
       <BottomNavigator buttons={contents.buttons} />
-      <form>
-        <Input
-          value={uriText}
-          onChange={e => setUriText(e.target.value)}
-        ></Input>
-        <Button handleClick={onClickSubmitButton} size="medium">
-          페이지 입력
-        </Button>
-      </form>
     </>
   );
 }
 
 const ContentsWrapper = styled.div`
-  .content {
-    box-sizing: border-box;
+  box-sizing: border-box;
 
-    width: 100%;
-    height: 100%;
-    padding: 64px;
-  }
-`
-const Input = styled.input`
-  width: 600px;
-  height: 50px;
-`
+  width: 100%;
+  height: 100%;
+  padding: 64px;
+`;
 
 export default NewProject;
