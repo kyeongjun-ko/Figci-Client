@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import styled from "styled-components";
-import Button from "../shared/Button";
 import Modal from "../shared/Modal";
 import Title from "../shared/Title";
 import Select from "../shared/Select";
@@ -17,27 +16,6 @@ function ProjectPage() {
   const [pageList, setPageList] = useState([]);
   const [selectPage, setSelectPage] = useState("");
   const navigate = useNavigate();
-
-  const store = [
-    {
-      "106:8": {
-        name: "nodeType",
-        node_id: "106:8",
-      },
-    },
-    {
-      "5:5": {
-        name: "Page 2",
-        node_id: "5:5",
-      },
-    },
-    {
-      "0:1": {
-        name: "Page 1",
-        node_id: "0:1",
-      },
-    },
-  ];
 
   const onChangeHandler = ev => {
     const date = ev.target.value;
@@ -76,8 +54,6 @@ function ProjectPage() {
 
       navigate("/result");
     } catch (err) {
-      console.log(err);
-
       setIsLoaded(false);
     }
   };
@@ -89,14 +65,9 @@ function ProjectPage() {
   };
 
   useEffect(() => {
-    setPageList(store);
+    const storedPageList = usePageListStore.getState().allPages;
 
-    // const storedPageList = usePageListStore.getState().allPages;
-
-    // if (storedPageList) {
-    //   setPageList(storedPageList);
-    // } else {
-    // }
+    setPageList(storedPageList);
   }, []);
 
   const contents = {
@@ -115,11 +86,15 @@ function ProjectPage() {
           defaultValue: "비교할 페이지 선택",
           options:
             pageList &&
-            pageList.map(Object.entries).map(([nodeId, nodeName]) => (
-              <option key={nodeId} value={nodeId}>
-                {nodeName}
-              </option>
-            )),
+            pageList.map(Object.entries).map(e => {
+              const [nodeId, nodeName] = e[0];
+
+              return (
+                <option key={nodeId} value={nodeId}>
+                  {nodeName.name}
+                </option>
+              );
+            }),
         },
       ],
       description: "이전 버전과 비교할 수 있는 페이지만 보여요!",

@@ -5,10 +5,10 @@ import styled from "styled-components";
 import BottomNavigator from "../shared/BottomNavigator";
 import Title from "../shared/Title";
 import Select from "../shared/Select";
-import Button from "../shared/Button";
 import Modal from "../shared/Modal";
 import Loading from "../shared/Loading";
-import { getPages, getPageList } from "../../services/pages";
+import { getPages } from "../../services/pages";
+import convertLabel from "../utils/convertLabel";
 
 import useProjectVersionStore from "../../../store/projectVersion";
 import usePageListStore from "../../../store/projectPage";
@@ -75,15 +75,16 @@ function ProjectVersion() {
 
   const onClickSubmitButton = async ev => {
     ev.preventDefault();
-
+    setIsLoaded(false);
     const result = { beforeVersion, afterVersion };
 
     updateVersions(result);
 
-    const pageList = getPageList(await getPages(result));
+    const pageList = await getPages(result);
 
     usePageListStore.getState().setPages(pageList);
 
+    setIsLoaded(true);
     navigate("/page");
   };
 
@@ -109,7 +110,7 @@ function ProjectVersion() {
           beforeDate &&
           Object.entries(byDates[beforeDate]).map(([key, value]) => (
             <option key={key} value={key}>
-              {value.label}
+              {convertLabel(value.label)}
             </option>
           )),
       },
@@ -138,7 +139,7 @@ function ProjectVersion() {
           afterDate &&
           Object.entries(byDates[afterDate]).map(([key, value]) => (
             <option key={key} value={key}>
-              {value.label}
+              {convertLabel(value.label)}
             </option>
           )),
       },
