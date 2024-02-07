@@ -23,8 +23,6 @@ const getPages = async ({ beforeVersion, afterVersion }) => {
     },
   });
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   const responseJson = await response.json();
 
   return responseJson;
@@ -46,43 +44,6 @@ const getPageList = pageList => {
   return result;
 };
 
-const getPageDiff = targetPage => {};
+const getPageDiff = () => {};
 
 export { getPages, getPageList, getPageDiff };
-=======
-  return await response.json();
-=======
-  const responseJson = await response.json();
-
-  return responseJson;
->>>>>>> 🎨 [Style] zustand 상태 저장 데이터 형식 변경
-};
-
-<<<<<<< HEAD
-export default getPages;
->>>>>>> ✨ [Feat] 버전 정보 입력시 선택 가능 페이지 fetch 요청
-=======
-const getPageList = pageList => {
-  const result = [];
-
-  pageList.forEach(page => {
-    const pageStatus = {
-      pageId: page.pageId,
-      name: page.name,
-      _id: page._id,
-    };
-
-    result.push(pageStatus);
-  });
-
-  return result;
-};
-
-<<<<<<< HEAD
-export { getPages, getPageList };
->>>>>>> ✨ [Feat] 페이지 상태 정규화를 위한 페이지 리스트 추출 유틸 함수 추가
-=======
-const getPageDiff = targetPage => {};
-
-export { getPages, getPageList, getPageDiff };
->>>>>>> 🎨 [Style] zustand 상태 저장 데이터 형식 변경

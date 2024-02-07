@@ -1,32 +1,29 @@
 import styled from "styled-components";
 
-function Select({ selectInfo, onInputChange }) {
+function Select({ selectInfo }) {
   return (
-    <SelectWrapper>
-      <label htmlFor={selectInfo.id}>{selectInfo.label}</label>
-      {selectInfo.selects.map(select => (
-        <select key={select.id} id={select.id} onChange={onInputChange}>
-          {select.options.map(option => (
-            <option
-              key={option.value}
-              value={option.value}
-              defaultValue={option.defaultValue}
-            >
-              {option.value}
-            </option>
-          ))}
-        </select>
-      ))}
-      {selectInfo.description && (
-        <span className="description">{selectInfo.description}</span>
-      )}
-    </SelectWrapper>
+    selectInfo && (
+      <SelectWrapper>
+        {selectInfo.label && (
+          <label htmlFor={selectInfo.id}>{selectInfo.label}</label>
+        )}
+        {selectInfo.selects.map(select => (
+          <select key={select.id} id={select.id} onChange={select.onChange}>
+            {select.options && select.options}
+          </select>
+        ))}
+        {selectInfo.description && (
+          <span className="description">{selectInfo.description}</span>
+        )}
+      </SelectWrapper>
+    )
   );
 }
 
 const SelectWrapper = styled.div`
   box-sizing: border-box;
   padding-top: 48px;
+  margin-right: 2rem;
 
   select {
     width: 400px;

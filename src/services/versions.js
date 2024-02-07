@@ -7,8 +7,6 @@ const getVersions = async projectsId => {
 
   const API_URI = generateApiUri(baseURI, `projects/${projectsId}/versions`);
 
-  console.log("Version_URI", API_URI);
-
   const response = await fetch(API_URI, {
     method: "GET",
     headers: {

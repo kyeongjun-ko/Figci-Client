@@ -26,10 +26,10 @@ const BottomNavWrapper = styled.div`
 
   width: 100%;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  flex-direction: row;
+  justify-content: flex-end;
   align-items: flex-end;
-  padding: 24px 40px;
+  padding: 24px 48px;
   border-top: 2px solid;
 
   button {
