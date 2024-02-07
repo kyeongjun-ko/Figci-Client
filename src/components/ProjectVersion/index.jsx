@@ -65,116 +65,113 @@ function ProjectVersion() {
     });
   };
 
+  const onClickBackToProject = ev => {
+    ev.preventDefault();
+
+    usePageStatusStore.getState().clearProject();
+
+    navigate(-1);
+  };
+
   const onClickSubmitButton = async ev => {
     ev.preventDefault();
 
-    const result = {
-      beforeVersion,
-      afterVersion,
-    };
+    const result = { beforeVersion, afterVersion };
 
-    updateVersions(beforeVersion, afterVersion);
+    updateVersions(result);
 
-    const pageLists = await getPages(result);
-    console.log("pageLists", pageLists);
-    const pageList = getPageList(pageLists);
-    console.log("pageList", pageList);
+    const pageList = getPageList(await getPages(result));
 
     usePageListStore.getState().setPages(pageList);
 
-    navigate("/page", {
-      state: {
-        pages: pageList,
+    navigate("/page");
+  };
+
+  const prevData = {
+    label: "이전 버전",
+    description: "지정한 버전 명이 없으면 시간으로 보여요!",
+    selects: [
+      {
+        id: "beforeDate",
+        onChange: onChangeBeforeDate,
+        options:
+          allDates &&
+          allDates.map(date => (
+            <option key={date} value={date}>
+              {date}
+            </option>
+          )),
       },
-    });
+      {
+        id: "beforeVersion",
+        onChange: onChangeBeforeVersion,
+        options:
+          beforeDate &&
+          Object.entries(byDates[beforeDate]).map(([key, value]) => (
+            <option key={key} value={key}>
+              {value.label}
+            </option>
+          )),
+      },
+    ],
+  };
+
+  const nextData = {
+    label: "이후 버전",
+    description: "지정한 버전 명이 없으면 시간으로 보여요!",
+    selects: [
+      {
+        id: "afterDate",
+        onChange: onChangeAfterDate,
+        options:
+          dateFilter() &&
+          dateFilter().map(date => (
+            <option key={date} value={date}>
+              {date}
+            </option>
+          )),
+      },
+      {
+        id: "afterVersion",
+        onChange: onChangeAfterVersion,
+        options:
+          afterDate &&
+          Object.entries(byDates[afterDate]).map(([key, value]) => (
+            <option key={key} value={key}>
+              {value.label}
+            </option>
+          )),
+      },
+    ],
+  };
+
+  const contents = {
+    title: {
+      step: "02",
+      firstSentence: "비교할 해당 피그마 파일의",
+      secondSentence: "이전 / 최신 버전을 입력해 주세요",
+    },
+    buttons: [
+      { text: "이전", usingCase: "solid", handleClick: onClickBackToProject },
+      { text: "다음", usingCase: "solid", handleClick: onClickSubmitButton },
+    ],
   };
 
   return (
     <>
-          <ContentsWrapper>
-        <Title />
-        <Select />
-        <Select />
+      {!isLoaded && (
+        <Modal>
+          <Loading />
+        </Modal>
+      )}
+      <ContentsWrapper>
+        <Title title={contents.title} />
+        <HorizontalAlign>
+          <Select selectInfo={prevData} />
+          <Select selectInfo={nextData} />
+        </HorizontalAlign>
       </ContentsWrapper>
-      <BottomNavigator />
-      <h1>ProjectPage</h1>
-      <form>
-        {!isLoaded && (
-          <Modal>
-            <Loading />
-          </Modal>
-        )}
-        <div>
-          <label htmlFor="beforeDate">
-            이전 날짜
-            <select
-              name="beforeDate"
-              id="beforeDate"
-              onChange={onChangeBeforeDate}
-            >
-              {allDates.map(date => (
-                <option key={date} value={date}>
-                  {date}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label htmlFor="beforeVersion">
-            이전 버전
-            <select
-              name="beforeVersion"
-              id="beforeVersion"
-              onChange={onChangeBeforeVersion}
-            >
-              {beforeDate &&
-                Object.entries(byDates[beforeDate]).map(([key, value]) => (
-                  <option key={key} value={key}>
-                    {value.label}
-                  </option>
-                ))}
-            </select>
-          </label>
-        </div>
-        <div>
-          <label htmlFor="afterDate">
-            이후 날짜
-            <select
-              name="afterDate"
-              id="afterDate"
-              onChange={onChangeAfterDate}
-            >
-              {dateFilter() &&
-                dateFilter().map(date => (
-                  <option key={date} value={date}>
-                    {date}
-                  </option>
-                ))}
-            </select>
-          </label>
-          <label htmlFor="afterVersion">
-            이후 버전
-            <select
-              name="afterVersion"
-              id="afterVersion"
-              onChange={onChangeAfterVersion}
-            >
-              {afterDate &&
-                Object.entries(byDates[afterDate]).map(([key, value]) => (
-                  <option key={key} value={key}>
-                    {value.label}
-                  </option>
-                ))}
-            </select>
-          </label>
-        </div>
-        <Button
-          disabled={(beforeVersion && afterVersion) === false}
-          handleClick={onClickSubmitButton}
-          size="medium"
-        >
-          버전 선택
-        </Button>
-      </form>
+      <BottomNavigator buttons={contents.buttons} />
     </>
   );
 }
@@ -185,6 +182,15 @@ const ContentsWrapper = styled.div`
   width: 100%;
   height: 100%;
   padding: 64px;
+`;
+
+const HorizontalAlign = styled.form`
+  display: flex;
+
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-end;
+  width: 100%;
 `;
 
 export default ProjectVersion;
