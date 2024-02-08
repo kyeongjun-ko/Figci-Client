@@ -1,4 +1,4 @@
-function getAuthFromURI() {
+const getAuthFromURI = () => {
   const params = new URL(window.location.href).searchParams;
 
   if (params.get("code")) {
@@ -8,6 +8,6 @@ function getAuthFromURI() {
     };
   }
   return false;
-}
+};
 
 export default getAuthFromURI;

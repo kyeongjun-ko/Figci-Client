@@ -1,4 +1,4 @@
-function generateApiUri(baseUri, endpoint, queryParams) {
+const generateApiUri = (baseUri, endpoint, queryParams) => {
   const apiUri = new URL(endpoint, baseUri);
 
   if (queryParams) {
@@ -10,6 +10,6 @@ function generateApiUri(baseUri, endpoint, queryParams) {
   }
 
   return apiUri.toString();
-}
+};
 
 export default generateApiUri;

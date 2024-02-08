@@ -19,7 +19,7 @@ const store = set => {
             ...state.byDates,
             [createdDate]: {
               ...state.byDates[createdDate],
-              [id]: { label: label || createdTime },
+              [id]: { label: label || createdTime.slice(0, -4) },
             },
           };
 
