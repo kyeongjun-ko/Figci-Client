@@ -11,12 +11,11 @@ import BottomNavigator from "../shared/BottomNavigator";
 
 import { getToken } from "../../services/auth";
 import getVersions from "../../services/versions";
-import getFileKeyFromURI from "../utils/getFileKeyFromURI";
-import getAuthFromURI from "../utils/getAuthFromURI";
+import getProjectKeyFromURI from "../utils/getProjectKeyFromURI";
 
+import useAuthStore from "../../../store/projectAuth";
 import useProjectVersionStore from "../../../store/projectVersion";
 import usePageStatusStore from "../../../store/projectInit";
-import useAuthStore from "../../../store/projectAuth";
 
 function NewProject() {
   const [isModalOpened, setIsModalOpened] = useState(true);
@@ -27,7 +26,7 @@ function NewProject() {
   const { auth, setAuth } = useAuthStore();
   const { setVersion } = useProjectVersionStore();
 
-  const code = query.get("code");
+  const code = query.get("code") || auth.code;
   const state = query.get("state");
 
   const setVersionList = newVersions => {
@@ -51,21 +50,20 @@ function NewProject() {
   const handleSubmitURI = async ev => {
     ev.preventDefault();
 
-    const fileId = getFileKeyFromURI(inputValue);
+    const projectKey = getProjectKeyFromURI(inputValue);
 
-    console.log("fileID", fileId);
-    setStatus({ fileKey: fileId });
-    setVersionList(await getVersions(fileId));
+    setStatus({ projectKey });
+    setVersionList(await getVersions(projectKey));
 
     navigate("/version");
   };
 
   useEffect(() => {
-    setAuthStore(getAuthFromURI());
+    setAuthStore(code);
 
     const fetchToken = async () => {
       try {
-        const authCode = code || auth.code;
+        const authCode = code;
 
         if (authCode) {
           const accessToken = await getToken(code);

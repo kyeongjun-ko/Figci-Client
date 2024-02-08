@@ -2,13 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
+import Loading from "../shared/Loading";
 import Modal from "../shared/Modal";
 import Title from "../shared/Title";
 import Select from "../shared/Select";
 import BottomNavigator from "../shared/BottomNavigator";
-
-import Loading from "../shared/Loading";
-import { getPageDiff } from "../../services/pages";
+import { getDiffingResult } from "../../services/pages";
 
 import usePageListStore from "../../../store/projectPage";
 import usePageStatusStore from "../../../store/projectInit";
@@ -19,7 +18,7 @@ function ProjectPage() {
   const [selectPage, setSelectPage] = useState("");
   const navigate = useNavigate();
   const { status, setStatus } = usePageStatusStore();
-  const { allPageIds } = usePageListStore();
+  const { byPageIds } = usePageListStore();
 
   const onChangeHandler = ev => {
     const date = ev.target.value;
@@ -27,15 +26,15 @@ function ProjectPage() {
     setSelectPage(date);
   };
 
-  const handleSubmitVersion = async ev => {
+  const handleSubmitPage = ev => {
     ev.preventDefault();
 
-    const { fileKey, beforeVersion, afterVersion } = status;
+    const { projectKey, beforeVersion, afterVersion } = status;
 
-    setStatus({ nodeId: selectPage });
+    setStatus({ pageId: selectPage });
 
     const targetPage = {
-      fileKey,
+      projectKey,
       beforeVersion,
       afterVersion,
       nodeId: selectPage,
@@ -44,7 +43,7 @@ function ProjectPage() {
     try {
       setIsLoaded(false);
 
-      getPageDiff(targetPage);
+      getDiffingResult(targetPage);
 
       setIsLoaded(true);
 
@@ -61,11 +60,27 @@ function ProjectPage() {
   };
 
   useEffect(() => {
-    const storedPageList = allPageIds;
+    const storedPageList = byPageIds;
 
     setPageList(storedPageList);
   }, []);
 
+  const selectOptionRenderList = () => {
+    const optionRenderList = [];
+    if (true) {
+      for (const pageId in pageList) {
+        const pageNode = pageList[pageId];
+
+        optionRenderList.push(
+          <option key={pageNode.node_id} value={pageNode.node_id}>
+            {pageNode.name}
+          </option>,
+        );
+      }
+    }
+
+    return optionRenderList;
+  };
   const contents = {
     title: {
       step: "03",
@@ -75,22 +90,13 @@ function ProjectPage() {
     selectInfo: {
       id: "project",
       label: "비교 페이지 선택",
+      defaultValue: "비교할 페이지 선택",
       selects: [
         {
           id: "pageSelection",
           value: "pageSelection",
-          defaultValue: "비교할 페이지 선택",
-          options:
-            pageList &&
-            pageList.map(Object.entries).map(e => {
-              const [nodeId, nodeName] = e[0];
-
-              return (
-                <option key={nodeId} value={nodeId}>
-                  {nodeName.name}
-                </option>
-              );
-            }),
+          options: pageList && selectOptionRenderList(),
+          onChange: onChangeHandler,
         },
       ],
       description: "이전 버전과 비교할 수 있는 페이지만 보여요!",
@@ -104,8 +110,7 @@ function ProjectPage() {
       {
         text: "비교하기",
         usingCase: "solid",
-        handleClick: handleSubmitVersion,
-        disabled: (status.beforeVersion && status.afterVersion) === false,
+        handleClick: handleSubmitPage,
       },
     ],
   };

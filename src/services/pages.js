@@ -1,6 +1,6 @@
 import generateApiUri from "../components/utils/generateURI";
 
-const getPages = async (fileKey, { beforeVersion, afterVersion }) => {
+const getPages = async (projectKey, { beforeVersion, afterVersion }) => {
   const baseURI = import.meta.env.VITE_BACKEND_BASE_API_URI;
 
   const token = JSON.parse(localStorage.getItem("FigmaToken")).access_token;
@@ -12,7 +12,7 @@ const getPages = async (fileKey, { beforeVersion, afterVersion }) => {
 
   const API_URI = generateApiUri(
     baseURI,
-    `projects/${fileKey}/pages`,
+    `projects/${projectKey}/pages`,
     queryParams,
   );
 
@@ -28,6 +28,6 @@ const getPages = async (fileKey, { beforeVersion, afterVersion }) => {
   return responseJson;
 };
 
-const getPageDiff = () => {};
+const getDiffingResult = () => {};
 
-export { getPages, getPageDiff };
+export { getPages, getDiffingResult };

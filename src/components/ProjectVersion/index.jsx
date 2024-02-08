@@ -2,12 +2,11 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
-import Modal from "../shared/Modal";
 import Loading from "../shared/Loading";
+import Modal from "../shared/Modal";
 import Title from "../shared/Title";
 import Select from "../shared/Select";
 import BottomNavigator from "../shared/BottomNavigator";
-
 import { getPages } from "../../services/pages";
 
 import useProjectVersionStore from "../../../store/projectVersion";
@@ -22,7 +21,8 @@ function ProjectVersion() {
   const [afterVersion, setAfterVersion] = useState("");
   const navigate = useNavigate();
 
-  const { allDates, byDates } = useProjectVersionStore(state => state);
+  const { allDates, byDates } = useProjectVersionStore();
+
   const { status, setStatus, clearProject } = usePageStatusStore();
   const { setPages } = usePageListStore();
 
@@ -50,7 +50,7 @@ function ProjectVersion() {
     setAfterVersion(version);
   };
 
-  const dateFilter = () => {
+  const filterNextDates = () => {
     if (beforeDate) {
       return allDates.filter(
         dateString => new Date(dateString) > new Date(beforeDate),
@@ -80,7 +80,7 @@ function ProjectVersion() {
 
     setStatus(selectVersions);
 
-    const pageList = await getPages(status.fileKey, selectVersions);
+    const pageList = await getPages(status.projectKey, selectVersions);
 
     setPages(pageList);
 
@@ -107,7 +107,7 @@ function ProjectVersion() {
         options:
           beforeDate &&
           Object.entries(byDates[beforeDate]).map(([key, value]) => (
-            <option key={key} value={key}>
+            <option key={value.label} value={key}>
               {value.label}
             </option>
           )),
@@ -123,8 +123,8 @@ function ProjectVersion() {
         id: "afterDate",
         onChange: onChangeAfterDate,
         options:
-          dateFilter() &&
-          dateFilter().map(date => (
+          filterNextDates() &&
+          filterNextDates().map(date => (
             <option key={date} value={date}>
               {date}
             </option>
@@ -136,7 +136,7 @@ function ProjectVersion() {
         options:
           afterDate &&
           Object.entries(byDates[afterDate]).map(([key, value]) => (
-            <option key={key} value={key}>
+            <option key={value.label} value={key}>
               {value.label}
             </option>
           )),
