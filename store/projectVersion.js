@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { devtools } from "zustand/middleware";
 
 const store = set => {
   return {
@@ -19,7 +18,7 @@ const store = set => {
             ...state.byDates,
             [createdDate]: {
               ...state.byDates[createdDate],
-              [id]: { label: label || createdTime },
+              [id]: { label: label || createdTime.slice(0, -4) },
             },
           };
 
@@ -42,6 +41,6 @@ const store = set => {
   };
 };
 
-const useProjectVersionStore = create(devtools(store));
+const useProjectVersionStore = create(store);
 
 export default useProjectVersionStore;
