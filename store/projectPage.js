@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { devtools } from "zustand/middleware";
 
 const pageStore = set => {
   return {
@@ -32,6 +31,6 @@ const pageStore = set => {
   };
 };
 
-const usePageListStore = create(devtools(pageStore));
+const usePageListStore = create(pageStore);
 
 export default usePageListStore;

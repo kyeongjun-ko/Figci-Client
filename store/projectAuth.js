@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { devtools } from "zustand/middleware";
 
 const authStore = set => {
   return {
@@ -30,6 +29,6 @@ const authStore = set => {
   };
 };
 
-const useAuthStore = create(devtools(authStore));
+const useAuthStore = create(authStore);
 
 export default useAuthStore;

@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { devtools } from "zustand/middleware";
 
 const initStore = set => {
   return {
@@ -56,6 +55,6 @@ const initStore = set => {
   };
 };
 
-const usePageStatusStore = create(devtools(initStore));
+const usePageStatusStore = create(initStore);
 
 export default usePageStatusStore;
