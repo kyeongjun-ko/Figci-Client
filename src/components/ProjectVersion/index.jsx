@@ -185,7 +185,6 @@ const ContentsWrapper = styled.div`
 
 const HorizontalAlign = styled.form`
   display: flex;
-  flex-direction: row;
   justify-content: flex-start;
   align-items: flex-end;
   width: 100%;
