@@ -1,10 +1,10 @@
 /* eslint-disable consistent-return */
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import styled, { css } from "styled-components";
+import styled from "styled-components";
 
-import Modal from "../shared/Modal";
 import Welcome from "../Welcome";
+import Modal from "../shared/Modal";
 import Title from "../shared/Title";
 import Input from "../shared/Input";
 import BottomNavigator from "../shared/BottomNavigator";
@@ -23,16 +23,19 @@ function NewProject() {
   const [inputValue, setInputValue] = useState("");
   const navigate = useNavigate();
   const [query] = useSearchParams();
+  const { setStatus } = usePageStatusStore();
+  const { auth, setAuth } = useAuthStore();
+  const { setVersion } = useProjectVersionStore();
 
   const code = query.get("code");
   const state = query.get("state");
 
-  const updateFileKey = newFileKey => {
-    usePageStatusStore.getState().setStatus({ fileKey: newFileKey });
+  const setVersionList = newVersions => {
+    setVersion(newVersions);
   };
 
-  const updateVersions = newVersions => {
-    useProjectVersionStore.getState().setVersion(newVersions);
+  const setAuthStore = authParams => {
+    setAuth(authParams);
   };
 
   const handleModalClick = ev => {
@@ -41,23 +44,20 @@ function NewProject() {
     setIsModalOpened(false);
   };
 
-  const handleInputChange = ev => {
+  const handleChangeInput = ev => {
     setInputValue(ev.target.value);
   };
 
-  const onClickSubmitButton = async ev => {
+  const handleSubmitURI = async ev => {
     ev.preventDefault();
 
-    const fileKey = getFileKeyFromURI(inputValue);
+    const fileId = getFileKeyFromURI(inputValue);
 
-    updateFileKey(fileKey);
-    updateVersions(await getVersions(fileKey));
+    console.log("fileID", fileId);
+    setStatus({ fileKey: fileId });
+    setVersionList(await getVersions(fileId));
 
     navigate("/version");
-  };
-
-  const setAuthStore = authParams => {
-    useAuthStore.getState().setAuth(authParams);
   };
 
   useEffect(() => {
@@ -65,7 +65,7 @@ function NewProject() {
 
     const fetchToken = async () => {
       try {
-        const authCode = code || useAuthStore.getState().auth.code;
+        const authCode = code || auth.code;
 
         if (authCode) {
           const accessToken = await getToken(code);
@@ -111,7 +111,7 @@ function NewProject() {
       ],
     },
     buttons: [
-      { text: "다음", usingCase: "solid", handleClick: onClickSubmitButton },
+      { text: "다음", usingCase: "solid", handleClick: handleSubmitURI },
     ],
   };
 
@@ -127,7 +127,7 @@ function NewProject() {
           <Title title={contents.title} />
           <Input
             inputInfo={contents.inputInfo}
-            onInputChange={handleInputChange}
+            onInputChange={handleChangeInput}
           />
         </form>
       </ContentsWrapper>

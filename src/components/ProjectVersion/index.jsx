@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
-import BottomNavigator from "../shared/BottomNavigator";
-import Title from "../shared/Title";
-import Select from "../shared/Select";
 import Modal from "../shared/Modal";
 import Loading from "../shared/Loading";
+import Title from "../shared/Title";
+import Select from "../shared/Select";
+import BottomNavigator from "../shared/BottomNavigator";
+
 import { getPages } from "../../services/pages";
-import convertLabel from "../utils/convertLabel";
 
 import useProjectVersionStore from "../../../store/projectVersion";
 import usePageListStore from "../../../store/projectPage";
@@ -23,6 +23,8 @@ function ProjectVersion() {
   const navigate = useNavigate();
 
   const { allDates, byDates } = useProjectVersionStore(state => state);
+  const { status, setStatus, clearProject } = usePageStatusStore();
+  const { setPages } = usePageListStore();
 
   const onChangeBeforeDate = ev => {
     const date = ev.target.value;
@@ -58,50 +60,46 @@ function ProjectVersion() {
     return false;
   };
 
-  const updateVersions = (prevVersion, nextVersion) => {
-    usePageStatusStore.getState().setStatus({
-      beforeVersion: prevVersion,
-      afterVersion: nextVersion,
-    });
-  };
-
-  const onClickBackToProject = ev => {
+  const handleClickPrevButton = ev => {
     ev.preventDefault();
 
-    usePageStatusStore.getState().clearProject();
+    clearProject();
 
     navigate(-1);
   };
 
-  const onClickSubmitButton = async ev => {
+  const handleSubmitNextButton = async ev => {
     ev.preventDefault();
+
     setIsLoaded(false);
-    const result = { beforeVersion, afterVersion };
 
-    updateVersions(result);
+    const selectVersions = {
+      beforeVersion,
+      afterVersion,
+    };
 
-    const pageList = await getPages(result);
+    setStatus(selectVersions);
 
-    usePageListStore.getState().setPages(pageList);
+    const pageList = await getPages(status.fileKey, selectVersions);
+
+    setPages(pageList);
 
     setIsLoaded(true);
     navigate("/page");
   };
 
-  const prevData = {
+  const prevVersionForm = {
     label: "이전 버전",
     description: "지정한 버전 명이 없으면 시간으로 보여요!",
     selects: [
       {
         id: "beforeDate",
         onChange: onChangeBeforeDate,
-        options:
-          allDates &&
-          allDates.map(date => (
-            <option key={date} value={date}>
-              {date}
-            </option>
-          )),
+        options: allDates.map(date => (
+          <option key={date} value={date}>
+            {date}
+          </option>
+        )),
       },
       {
         id: "beforeVersion",
@@ -110,14 +108,14 @@ function ProjectVersion() {
           beforeDate &&
           Object.entries(byDates[beforeDate]).map(([key, value]) => (
             <option key={key} value={key}>
-              {convertLabel(value.label)}
+              {value.label}
             </option>
           )),
       },
     ],
   };
 
-  const nextData = {
+  const nextVersionForm = {
     label: "이후 버전",
     description: "지정한 버전 명이 없으면 시간으로 보여요!",
     selects: [
@@ -139,7 +137,7 @@ function ProjectVersion() {
           afterDate &&
           Object.entries(byDates[afterDate]).map(([key, value]) => (
             <option key={key} value={key}>
-              {convertLabel(value.label)}
+              {value.label}
             </option>
           )),
       },
@@ -153,8 +151,8 @@ function ProjectVersion() {
       secondSentence: "이전 / 최신 버전을 입력해 주세요",
     },
     buttons: [
-      { text: "이전", usingCase: "solid", handleClick: onClickBackToProject },
-      { text: "다음", usingCase: "solid", handleClick: onClickSubmitButton },
+      { text: "이전", usingCase: "solid", handleClick: handleClickPrevButton },
+      { text: "다음", usingCase: "solid", handleClick: handleSubmitNextButton },
     ],
   };
 
@@ -168,8 +166,8 @@ function ProjectVersion() {
       <ContentsWrapper>
         <Title title={contents.title} />
         <HorizontalAlign>
-          <Select selectInfo={prevData} />
-          <Select selectInfo={nextData} />
+          <Select selectInfo={prevVersionForm} />
+          <Select selectInfo={nextVersionForm} />
         </HorizontalAlign>
       </ContentsWrapper>
       <BottomNavigator buttons={contents.buttons} />
@@ -187,7 +185,6 @@ const ContentsWrapper = styled.div`
 
 const HorizontalAlign = styled.form`
   display: flex;
-
   flex-direction: row;
   justify-content: flex-start;
   align-items: flex-end;

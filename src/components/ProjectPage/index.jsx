@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import styled from "styled-components";
+
 import Modal from "../shared/Modal";
 import Title from "../shared/Title";
 import Select from "../shared/Select";
 import BottomNavigator from "../shared/BottomNavigator";
+
 import Loading from "../shared/Loading";
 import { getPageDiff } from "../../services/pages";
+
 import usePageListStore from "../../../store/projectPage";
 import usePageStatusStore from "../../../store/projectInit";
 
@@ -16,6 +18,8 @@ function ProjectPage() {
   const [pageList, setPageList] = useState([]);
   const [selectPage, setSelectPage] = useState("");
   const navigate = useNavigate();
+  const { status, setStatus } = usePageStatusStore();
+  const { allPageIds } = usePageListStore();
 
   const onChangeHandler = ev => {
     const date = ev.target.value;
@@ -23,20 +27,12 @@ function ProjectPage() {
     setSelectPage(date);
   };
 
-  const updatePageId = newPageId => {
-    usePageStatusStore.getState().setStatus({ nodeId: newPageId });
-  };
-
-  const getStatus = () => {
-    return usePageStatusStore.getState().status;
-  };
-
-  const onClickSubmitButton = async ev => {
+  const handleSubmitVersion = async ev => {
     ev.preventDefault();
 
-    const { fileKey, beforeVersion, afterVersion } = getStatus();
+    const { fileKey, beforeVersion, afterVersion } = status;
 
-    updatePageId(selectPage);
+    setStatus({ nodeId: selectPage });
 
     const targetPage = {
       fileKey,
@@ -65,7 +61,7 @@ function ProjectPage() {
   };
 
   useEffect(() => {
-    const storedPageList = usePageListStore.getState().allPages;
+    const storedPageList = allPageIds;
 
     setPageList(storedPageList);
   }, []);
@@ -108,9 +104,8 @@ function ProjectPage() {
       {
         text: "비교하기",
         usingCase: "solid",
-        handleClick: onClickSubmitButton,
-        disabled:
-          (getStatus().beforeVersion && getStatus().afterVersion) === false,
+        handleClick: handleSubmitVersion,
+        disabled: (status.beforeVersion && status.afterVersion) === false,
       },
     ],
   };

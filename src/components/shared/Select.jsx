@@ -9,7 +9,7 @@ function Select({ selectInfo }) {
         )}
         {selectInfo.selects.map(select => (
           <select key={select.id} id={select.id} onChange={select.onChange}>
-            {select.options && select.options}
+            {select.options}
           </select>
         ))}
         {selectInfo.description && (
@@ -23,7 +23,7 @@ function Select({ selectInfo }) {
 const SelectWrapper = styled.div`
   box-sizing: border-box;
   padding-top: 48px;
-  margin-right: 2rem;
+  margin-right: 24px;
 
   select {
     width: 400px;
