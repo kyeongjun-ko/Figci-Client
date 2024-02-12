@@ -70,4 +70,59 @@ const renderRect = (el, number) => {
   });
 };
 
-export { renderRect, renderImg };
+const renderText = (el, number) => {
+  const style = el.property;
+  const bgColor = style.fills[0]?.color;
+  const { strokes } = style;
+
+  return new fabric.Textbox(style.characters, {
+    left: style.absoluteBoundingBox.x + number.dx,
+    top: style.absoluteBoundingBox.y + number.dy,
+    width: style.absoluteBoundingBox.width,
+    height: style.style.lineHeightPx,
+    fontSize: style.style.fontSize,
+    fontFamily: style.style.fontFamily,
+    fontWeight: style.style.fontWeight,
+    stroke: strokes.length
+      ? `rgba(${strokes[0].color.r * 255}, ${strokes[0].color.g * 255}, ${strokes[0].color.b * 255}, ${strokes[0].color.a})`
+      : 0,
+    strokeWidth: style.strokeWeight && style.strokeWeight,
+    strokeDashArray: style.strokeAlign && style.strokeDashes,
+    strokeLineCap: style.strokeLineCap && style.strokeLineCap,
+    strokeLineJoin: style.strokeJoin && style.strokeJoin,
+    textAlign: style.style.textAlignHorizontal.toLowerCase(),
+    verticalAlign: style.style.textAlignVertical.toLowerCase(),
+    lineHeight: 1.2,
+    fill:
+      bgColor &&
+      `rgba(${bgColor.r * 255}, ${bgColor.g * 255}, ${bgColor.b * 255}, ${bgColor.a})`,
+  });
+};
+
+const renderTriangle = (el, number) => {
+  const style = el.property;
+  const point = el.property.absoluteBoundingBox;
+
+  return new fabric.Triangle({
+    left: point.x + number.dx,
+    top: point.y + number.dy,
+    width: point.width,
+    height: style.rotation > 0 ? point.height : -point.height,
+    preserveRatio: true,
+    fill: `rgba(${style.fills[0].color.r * 255}, ${style.fills[0].color.g * 255}, ${style.fills[0].color.b * 255}, ${style.fills[0].color.a})`,
+    strokeWidth: style.strokeWeight,
+  });
+};
+
+const typeMapper = {
+  GROUP: renderRect,
+  RECTANGLE: renderRect,
+  TEXT: renderText,
+  INSTANCE: renderRect,
+  FRAME: renderRect,
+  REGULAR_POLYGON: renderTriangle,
+  VECTOR: renderRect,
+  COMPONENT: renderRect,
+};
+
+export default typeMapper;
