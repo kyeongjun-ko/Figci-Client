@@ -15,6 +15,8 @@ import useProjectVersionStore from "../../../store/projectVersion";
 import getDiffingResultQuery from "../../../services/getDiffingResultQuery";
 
 import figciLogo from "../../../assets/logo_figci.png";
+import typeMapper from "../../../services/renderFabric";
+import sortNodes from "../../../utils/sortNode";
 
 function DiffingResult() {
   const [frameList, setFrameList] = useState([]);
@@ -89,6 +91,27 @@ function DiffingResult() {
 
     setCanvas(newCanvas);
   }, []);
+
+  const matchType = (el, number) => {
+    const getTypeFunction = typeMapper[el.type];
+
+    if (getTypeFunction) {
+      return getTypeFunction(el, number);
+    }
+  };
+
+  const renderFrame = (frame, newCoord) => {
+    const fabricObjects = {};
+    const sortedKeys = sortNodes(frame);
+
+    sortedKeys.forEach(nodeId => {
+      fabricObjects[nodeId] = matchType(frame[nodeId], newCoord);
+    });
+
+    sortedKeys.forEach(nodeId => {
+      canvas.add(matchType(frame[nodeId], newCoord));
+    });
+  };
 
   const handleFrameSelect = (frameId, frameName) => {
     setSelectedFrame({ id: frameId, name: frameName });
