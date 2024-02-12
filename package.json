@@ -47,5 +47,6 @@
     "prettier": "^3.2.4",
     "vite": "^5.0.8",
     "vitest": "^1.2.2"
-  }
+  },
+  "proxy": "https://https://api.figma.com"
 }
