@@ -107,6 +107,29 @@ function DiffingResult() {
     sortedKeys.forEach(nodeId => {
       fabricObjects[nodeId] = matchType(frame[nodeId], newCoord);
     });
+    sortedKeys.forEach(nodeId => {
+      const targetJSON = frame[nodeId];
+
+      const childrenIds = [];
+      if (
+        targetJSON.type === "INSTANCE" &&
+        targetJSON.property.clipsContent === true
+      ) {
+        fabricObjects[nodeId].absolutePositioned = true;
+
+        targetJSON.property.overrides.forEach(node => {
+          if (node.overriddenFields.includes("fills")) {
+            childrenIds.push(node.id);
+          }
+        });
+      }
+
+      while (childrenIds.length) {
+        const clipTargetId = childrenIds.pop();
+
+        fabricObjects[clipTargetId].clipPath = fabricObjects[nodeId];
+      }
+    });
 
     sortedKeys.forEach(nodeId => {
       canvas.add(matchType(frame[nodeId], newCoord));

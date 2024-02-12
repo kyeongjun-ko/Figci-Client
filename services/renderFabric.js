@@ -114,8 +114,32 @@ const renderTriangle = (el, number) => {
   });
 };
 
+const renderGroup = (el, list) => {
+  const style = el.property;
+  const bgColor = style.fills[0] ? style.fills[0].color : null;
+
+  const groupObject = new fabric.Group(list, {
+    left: style.absoluteBoundingBox.x,
+    top: style.absoluteBoundingBox.y,
+    width: style.absoluteBoundingBox.width,
+    height: style.absoluteBoundingBox.height,
+    fill:
+      bgColor &&
+      `rgba(${bgColor.r * 255}, ${bgColor.g * 255}, ${bgColor.b * 255}, ${bgColor.a})`,
+    blendMode:
+      bgColor &&
+      (style.fills[0].blendMode === "PASS_THROUGH"
+        ? "normal"
+        : style.fills[0]?.blendMode),
+    strokeAlign: style.strokeAlign === "INSIDE" ? "inside" : style.strokeAlign,
+    visible: true,
+  });
+
+  return groupObject;
+};
+
 const typeMapper = {
-  GROUP: renderRect,
+  GROUP: renderGroup,
   RECTANGLE: renderRect,
   TEXT: renderText,
   INSTANCE: renderRect,
