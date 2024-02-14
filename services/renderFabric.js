@@ -1,51 +1,85 @@
 import { fabric } from "fabric";
 
 const renderImg = async (el, number) => {
-  const { nodeId } = el;
   const position = el.property.absoluteBoundingBox;
 
-  const devProjectKey = "x7GJK9PUJZMKB0tB7RqEc3";
+  if (el.type === "ELLIPSE") {
+    const imageObject = async (addNumber, offSet) => {
+      const { x, y, width, height } = offSet;
 
-  const baseFigmaURL = `/v1/images/${devProjectKey}?ids=${nodeId}`;
-  const token = JSON.parse(localStorage.getItem("FigmaToken")).access_token;
+      return new Promise(resolve => {
+        fabric.Image.fromURL(el.property.imageURL, img => {
+          img.set({
+            left: x + addNumber.dx,
+            top: y + addNumber.dy,
+          });
 
-  const response = await fetch(baseFigmaURL, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    credentials: "include",
-  });
+          const mask = new fabric.Ellipse({
+            left: x + addNumber.dx,
+            top: y + addNumber.dy,
+            rx: width / 2,
+            ry: height / 2,
+            angle: el.property.arcData.endingAngle,
+            absolutePositioned: true,
+          });
 
-  const { images } = await response.json();
+          img.scaleToWidth(width);
+          img.clipPath = mask;
 
-  const imageURL = images[nodeId];
+          resolve(img);
+        });
+      });
+    };
 
-  const setImageXY = async (imgObject, numberToAdd, coordinate) => {
-    const { x, y, width, height } = coordinate;
+    const result = await imageObject(number, position);
 
-    return imgObject.set({
-      left: x + numberToAdd.dx,
-      top: y + numberToAdd.dy,
-      width,
-      height,
-    });
-  };
+    return result;
+  }
 
-  const imageObject = () => {
-    const ImageRectangle = fabric.Image.fromURL(imageURL);
+  if (el.type === "RECTANGLE") {
+    const imageObject = async (addNumber, offSet) => {
+      const { x, y, width, height } = offSet;
 
-    return setImageXY(ImageRectangle, number, position);
-  };
+      return new Promise((resolve, reject) => {
+        const mask = new fabric.Rect({
+          left: x + addNumber.dx,
+          top: y + addNumber.dy,
+          width,
+          height,
+          absolutePositioned: true,
+        });
 
-  return imageObject();
+        fabric.Image.fromURL(el.property.imageURL, img => {
+          try {
+            img.set({
+              left: x + addNumber.dx,
+              top: y + addNumber.dy,
+            });
+
+            img.scaleToWidth(width);
+            img.clipPath = mask;
+
+            resolve(img);
+          } catch {
+            reject(new Error("이미지 로드에 실패했습니다."));
+          }
+        });
+      });
+    };
+
+    const result = await imageObject(number, position);
+
+    return result;
+  }
 };
 
-const renderRect = (el, number) => {
+const renderRect = async (el, number) => {
   const isExistImg = el.property.fills[0]?.imageRef ?? null;
 
   if (isExistImg) {
-    return renderImg(el, number);
+    const imageFabricObject = await renderImg(el, number);
+
+    return imageFabricObject;
   }
 
   const style = el.property;
@@ -60,12 +94,42 @@ const renderRect = (el, number) => {
     fill:
       bgColor &&
       `rgba(${bgColor.r * 255}, ${bgColor.g * 255}, ${bgColor.b * 255}, ${bgColor.a})`,
+    opacity: style.fills[0]?.opacity,
     stroke: strokes.length
       ? `rgba(${strokes[0].color.r * 255}, ${strokes[0].color.g * 255}, ${strokes[0].color.b * 255}, ${strokes[0].color.a})`
       : 0,
     strokeAlign: style.strokeAlign && style.strokeAlign,
     rx: style.cornerRadius || 0,
     ry: style.cornerRadius || 0,
+    visible: true,
+  });
+};
+
+const renderEllipse = async (el, number) => {
+  const isExistImg = el.property.fills[0]?.imageRef ?? null;
+
+  if (isExistImg) {
+    const imageFabricObject = await renderImg(el, number);
+
+    return imageFabricObject;
+  }
+  const style = el.property;
+  const bgColor = style.fills[0]?.color ?? style.backgroundColor ?? null;
+  const { strokes } = style;
+
+  return new fabric.Ellipse({
+    left: style.absoluteBoundingBox.x + number.dx,
+    top: style.absoluteBoundingBox.y + number.dy,
+    rx: style.absoluteBoundingBox.width / 2,
+    ry: style.absoluteBoundingBox.height / 2,
+    fill:
+      bgColor &&
+      `rgba(${bgColor.r * 255}, ${bgColor.g * 255}, ${bgColor.b * 255}, ${bgColor.a})`,
+    stroke: strokes.length
+      ? `rgba(${strokes[0].color.r * 255}, ${strokes[0].color.g * 255}, ${strokes[0].color.b * 255}, ${strokes[0].color.a})`
+      : 0,
+    strokeAlign: style.strokeAlign && style.strokeAlign,
+    angle: style.property.arcData.endingAngle,
     visible: true,
   });
 };
@@ -108,38 +172,13 @@ const renderTriangle = (el, number) => {
     top: point.y + number.dy,
     width: point.width,
     height: style.rotation > 0 ? point.height : -point.height,
-    preserveRatio: true,
     fill: `rgba(${style.fills[0].color.r * 255}, ${style.fills[0].color.g * 255}, ${style.fills[0].color.b * 255}, ${style.fills[0].color.a})`,
     strokeWidth: style.strokeWeight,
   });
 };
 
-const renderGroup = (el, list) => {
-  const style = el.property;
-  const bgColor = style.fills[0] ? style.fills[0].color : null;
-
-  const groupObject = new fabric.Group(list, {
-    left: style.absoluteBoundingBox.x,
-    top: style.absoluteBoundingBox.y,
-    width: style.absoluteBoundingBox.width,
-    height: style.absoluteBoundingBox.height,
-    fill:
-      bgColor &&
-      `rgba(${bgColor.r * 255}, ${bgColor.g * 255}, ${bgColor.b * 255}, ${bgColor.a})`,
-    blendMode:
-      bgColor &&
-      (style.fills[0].blendMode === "PASS_THROUGH"
-        ? "normal"
-        : style.fills[0]?.blendMode),
-    strokeAlign: style.strokeAlign === "INSIDE" ? "inside" : style.strokeAlign,
-    visible: true,
-  });
-
-  return groupObject;
-};
-
 const typeMapper = {
-  GROUP: renderGroup,
+  GROUP: renderRect,
   RECTANGLE: renderRect,
   TEXT: renderText,
   INSTANCE: renderRect,
@@ -147,6 +186,7 @@ const typeMapper = {
   REGULAR_POLYGON: renderTriangle,
   VECTOR: renderRect,
   COMPONENT: renderRect,
+  ELLIPSE: renderEllipse,
 };
 
 export default typeMapper;
