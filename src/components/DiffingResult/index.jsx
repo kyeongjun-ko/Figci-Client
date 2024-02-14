@@ -16,7 +16,7 @@ import getDiffingResultQuery from "../../../services/getDiffingResultQuery";
 
 import figciLogo from "../../../assets/logo_figci.png";
 import typeMapper from "../../../services/renderFabric";
-import sortNodes from "../../../utils/sortNode";
+import getDiffingResult from "../../../services/getDiffingResult";
 
 function DiffingResult() {
   const [frameList, setFrameList] = useState([]);
@@ -84,40 +84,96 @@ function DiffingResult() {
 
   useEffect(() => {
     const newCanvas = new fabric.Canvas("canvas", {
-      width: 650,
-      height: 650,
+      width: 1600,
+      height: 1600,
       backgroundColor: "#CED4DA",
     });
 
     setCanvas(newCanvas);
   }, []);
 
-  const matchType = (el, number) => {
+  const matchType = async (el, number) => {
+    if (!el.type) {
+      const getDefaultFunction = typeMapper.RECTANGLE;
+      const fabricObject = await getDefaultFunction(el, number);
+
+      return fabricObject;
+    }
+
     const getTypeFunction = typeMapper[el.type];
 
     if (getTypeFunction) {
-      return getTypeFunction(el, number);
+      const fabricObject = await getTypeFunction(el, number);
+
+      return fabricObject;
     }
+    console.log("지원하지 않는 타입입니다.");
   };
 
-  const renderFrame = (frame, newCoord) => {
-    const fabricObjects = {};
-    const sortedKeys = sortNodes(frame);
+  const createFabric = async frameJSON => {
+    const devProjectKey = "x7GJK9PUJZMKB0tB7RqEc3";
 
-    sortedKeys.forEach(nodeId => {
-      fabricObjects[nodeId] = matchType(frame[nodeId], newCoord);
-    });
-    sortedKeys.forEach(nodeId => {
-      const targetJSON = frame[nodeId];
+    const baseFigmaURL = `/v1/files/${devProjectKey}/images`;
+    const token = JSON.parse(localStorage.getItem("FigmaToken")).access_token;
 
+    const requestFetch = async () => {
+      const fetchData = await fetch(baseFigmaURL, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const fetchJson = await fetchData.json();
+
+      return fetchJson.meta.images;
+    };
+
+    const imageURLs = await requestFetch();
+    const fabricObject = {};
+
+    const fixCoord = frameSubtree => {
+      const { x, y } = frameSubtree.property.absoluteBoundingBox;
+
+      return {
+        dx: x < 0 ? Math.abs(x) + 20 : -1 * x + 20,
+        dy: y < 0 ? Math.abs(y) + 20 : -1 * y + 20,
+      };
+    };
+
+    const parent = await matchType(frameJSON, fixCoord(frameJSON));
+
+    parent.stroke = "black";
+    parent.strokeWidth = 2;
+
+    fabricObject[frameJSON.frameId] = parent;
+
+    for (const nodeId in frameJSON.nodes) {
+      if (frameJSON.nodes[nodeId].property.fills[0]?.imageRef) {
+        const { imageRef } = frameJSON.nodes[nodeId].property.fills[0];
+
+        if (imageURLs[imageRef]) {
+          frameJSON.nodes[nodeId].property.imageURL = imageURLs[imageRef];
+        }
+      }
+
+      fabricObject[nodeId] = matchType(
+        frameJSON.nodes[nodeId],
+        fixCoord(frameJSON),
+      );
+    }
+
+    for (const nodeId in frameJSON.nodes) {
+      const targetNode = frameJSON.nodes[nodeId];
       const childrenIds = [];
-      if (
-        targetJSON.type === "INSTANCE" &&
-        targetJSON.property.clipsContent === true
-      ) {
-        fabricObjects[nodeId].absolutePositioned = true;
 
-        targetJSON.property.overrides.forEach(node => {
+      if (
+        targetNode.property.clipsContent &&
+        targetNode.property.clipsContent === true
+      ) {
+        fabricObject[nodeId].absolutePositioned = true;
+
+        targetNode.property.overrides?.forEach(node => {
           if (node.overriddenFields.includes("fills")) {
             childrenIds.push(node.id);
           }
@@ -127,13 +183,23 @@ function DiffingResult() {
       while (childrenIds.length) {
         const clipTargetId = childrenIds.pop();
 
-        fabricObjects[clipTargetId].clipPath = fabricObjects[nodeId];
+        fabricObject[clipTargetId].clipPath = fabricObject[nodeId];
       }
-    });
+    }
 
-    sortedKeys.forEach(nodeId => {
-      canvas.add(matchType(frame[nodeId], newCoord));
-    });
+    if (frameJSON.property.clipsContent === true) {
+      fabricObject[frameJSON.frameId].absolutePositioned = true;
+
+      for (const nodeId in fabricObject) {
+        if (nodeId !== frameJSON.frameId && !fabricObject[nodeId].clipPath) {
+          fabricObject[nodeId].clipPath = fabricObject[frameJSON.frameId];
+        }
+      }
+    }
+
+    for (const nodeId in fabricObject) {
+      canvas.add(fabricObject[nodeId]);
+    }
   };
 
   const handleFrameSelect = (frameId, frameName) => {
