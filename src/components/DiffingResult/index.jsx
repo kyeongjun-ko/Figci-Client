@@ -16,7 +16,6 @@ import getDiffingResultQuery from "../../../services/getDiffingResultQuery";
 
 import figciLogo from "../../../assets/logo_figci.png";
 import typeMapper from "../../../services/renderFabric";
-import getDiffingResult from "../../../services/getDiffingResult";
 
 function DiffingResult() {
   const [frameList, setFrameList] = useState([]);
@@ -62,36 +61,6 @@ function DiffingResult() {
   const beforeVersionLabel = getVersionLabel(beforeDate, beforeVersion);
   const afterVersionLabel = getVersionLabel(afterDate, afterVersion);
 
-  useEffect(() => {
-    if (diffingResult) {
-      if (diffingResult.result === "error") {
-        setToast({ status: true, message: diffingResult.message });
-
-        return;
-      }
-
-      const frames = [];
-
-      for (const frameId in diffingResult.content.frames) {
-        const frame = diffingResult.content.frames[frameId];
-
-        frames.push({ name: frame.name, id: frameId });
-      }
-
-      setFrameList(frames);
-    }
-  }, [diffingResult]);
-
-  useEffect(() => {
-    const newCanvas = new fabric.Canvas("canvas", {
-      width: 1600,
-      height: 1600,
-      backgroundColor: "#CED4DA",
-    });
-
-    setCanvas(newCanvas);
-  }, []);
-
   const matchType = async (el, number) => {
     if (!el.type) {
       const getDefaultFunction = typeMapper.RECTANGLE;
@@ -107,13 +76,10 @@ function DiffingResult() {
 
       return fabricObject;
     }
-    console.log("지원하지 않는 타입입니다.");
   };
 
-  const createFabric = async frameJSON => {
-    const devProjectKey = "x7GJK9PUJZMKB0tB7RqEc3";
-
-    const baseFigmaURL = `/v1/files/${devProjectKey}/images`;
+  const renderFabricFrame = async frameJSON => {
+    const baseFigmaURL = `/v1/files/${projectKey}/images`;
     const token = JSON.parse(localStorage.getItem("FigmaToken")).access_token;
 
     const requestFetch = async () => {
@@ -130,6 +96,7 @@ function DiffingResult() {
     };
 
     const imageURLs = await requestFetch();
+
     const fabricObject = {};
 
     const fixCoord = frameSubtree => {
@@ -143,8 +110,10 @@ function DiffingResult() {
 
     const parent = await matchType(frameJSON, fixCoord(frameJSON));
 
-    parent.stroke = "black";
-    parent.strokeWidth = 2;
+    parent.set({
+      stoke: "black",
+      strokeWidth: 2,
+    });
 
     fabricObject[frameJSON.frameId] = parent;
 
@@ -202,9 +171,108 @@ function DiffingResult() {
     }
   };
 
+  const renderFabricDifference = async differences => {
+    const frameId = selectedFrame.id;
+    const fixCoord = frameSubtree => {
+      const { x, y } = frameSubtree.property.absoluteBoundingBox;
+
+      return {
+        dx: x < 0 ? Math.abs(x) + 20 : -1 * x + 20,
+        dy: y < 0 ? Math.abs(y) + 20 : -1 * y + 20,
+      };
+    };
+
+    const fixOffset = fixCoord(diffingResult.content.frames[frameId]);
+
+    const differenceArray = [];
+
+    for (const nodeId in differences) {
+      if (differences[nodeId].frameId === frameId) {
+        const [rectObject, textObject] = matchType(
+          differences[nodeId],
+          fixOffset,
+        );
+
+        rectObject.on("mouseover", () => {
+          rectObject.set({
+            fill: "rgba(180, 46, 46, 0.7)",
+          });
+          textObject.set({
+            visible: true,
+          });
+          canvas.renderAll();
+        });
+
+        rectObject.on("mouseout", () => {
+          rectObject.set({
+            fill: "rgba(180, 46, 46, 0.3)",
+          });
+          textObject.set({
+            visible: false,
+          });
+          canvas.renderAll();
+        });
+
+        differenceArray.push(rectObject);
+        differenceArray.push(textObject);
+      }
+    }
+
+    differenceArray.forEach(e => {
+      canvas.add(e);
+    });
+  };
+
   const handleFrameSelect = (frameId, frameName) => {
     setSelectedFrame({ id: frameId, name: frameName });
   };
+
+  useEffect(() => {
+    if (!canvas) {
+      const newCanvas = new fabric.Canvas("canvas", {
+        width: 1000,
+        height: 1000,
+        backgroundColor: "#CED4DA",
+      });
+
+      setCanvas(newCanvas);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (diffingResult) {
+      if (diffingResult.result === "error") {
+        setToast({ status: true, message: diffingResult.message });
+
+        return;
+      }
+
+      const frames = [];
+
+      for (const frameId in diffingResult.content.frames) {
+        const frame = diffingResult.content.frames[frameId];
+
+        frames.push({ name: frame.name, id: frameId });
+      }
+
+      setFrameList(frames);
+    }
+  }, [diffingResult]);
+
+  useEffect(() => {
+    if (diffingResult) {
+      const frameId = selectedFrame.id;
+
+      const renderFabricOnCanvas = async content => {
+        canvas.clear();
+
+        await renderFabricFrame(content.frame[frameId]);
+        renderFabricDifference(content.difference);
+      };
+
+      renderFabricOnCanvas(diffingResult.content);
+    }
+  }, [selectedFrame]);
 
   return (
     <>
@@ -292,7 +360,7 @@ function DiffingResult() {
             projectUrl={projectUrl}
             onFrameSelect={handleFrameSelect}
           />
-          <canvas id="canvas" />
+          <Canvas id="canvas" />
         </div>
       </ResultWrapper>
       {toast.status && (
@@ -302,6 +370,9 @@ function DiffingResult() {
   );
 }
 
+const Canvas = styled.canvas`
+  z-index: 15;
+`;
 const ResultWrapper = styled.div`
   display: flex;
   flex-direction: column;
