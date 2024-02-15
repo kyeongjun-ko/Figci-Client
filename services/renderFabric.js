@@ -1,4 +1,5 @@
 import { fabric } from "fabric";
+import createDiffText from "../utils/createDiffText";
 
 const renderImg = async (el, number) => {
   const position = el.property.absoluteBoundingBox;
@@ -177,6 +178,47 @@ const renderTriangle = (el, number) => {
   });
 };
 
+const renderDifference = (el, number) => {
+  const { x, y, width, height } = el.position;
+
+  const diffRect = new fabric.Rect({
+    left: x + number.dx - 15,
+    top: y + number.dy - 15,
+    width: width + 20,
+    height: height + 20,
+    fill: "rgba(180, 46, 46, 0.3)",
+    stroke: "rgba(243, 7, 7, 0.7)",
+    strokeWidth: 2,
+    strokeOpacity: 1,
+    rx: 5,
+    ry: 5,
+    evented: true,
+  });
+
+  const diffContent = new fabric.Textbox(
+    createDiffText(el.differenceInformation),
+    {
+      left: x + number.dx - 10 + width + 30,
+      top: y + number.dy - 10,
+      width: 400,
+      fontFamily: "Noto Sans KR",
+      fontWeight: 600,
+      fontStyle: "normal",
+      textAlign: "center",
+      fontSize: 12,
+      fill: "rgba(255, 255, 255, 1)",
+      backgroundColor: "rgba(0, 0, 0, 0.8)",
+      opacity: 0.85,
+      lineHeight: 1.2,
+      hasBorders: true,
+      borderColor: "rgba(0, 0, 0, 0.8)",
+      visible: false,
+    },
+  );
+
+  return [diffRect, diffContent];
+};
+
 const typeMapper = {
   GROUP: renderRect,
   RECTANGLE: renderRect,
@@ -187,6 +229,7 @@ const typeMapper = {
   VECTOR: renderRect,
   COMPONENT: renderRect,
   ELLIPSE: renderEllipse,
+  MODIFIED: renderDifference,
 };
 
 export default typeMapper;
