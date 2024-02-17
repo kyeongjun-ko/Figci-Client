@@ -242,9 +242,49 @@ function DiffingResult() {
     }));
 
   useEffect(() => {
-    canvasRef.current = initCanvas();
+    const initCanvas = () =>
+      (canvasRef.current = new fabric.Canvas("canvas", {
+        width: window.innerHeight,
+        height: window.innerHeight,
+        backgroundColor: "#CED4DA",
+        setZoom: 0.3,
+        selection: false,
+      }));
+
+    const newCanvas = initCanvas();
+    newCanvas.on("mouse:wheel", opt => {
+      const delta = opt.e.deltaY;
+      let Zoom = canvasRef.current.getZoom();
+
+      Zoom *= 0.999 ** delta;
+      Zoom = Zoom > 20 ? 20 : Zoom < 0.01 && 0.01;
+
+      if (Zoom > 20) Zoom = 20;
+      if (Zoom < 0.01) Zoom = 0.01;
+
+      canvasRef.current.zoomToPoint(
+        { x: opt.e.offsetX, y: opt.e.offsetY },
+        Zoom,
+      );
+
+      opt.e.preventDefault();
+      opt.e.stopPropagation();
+    });
+
+    canvasRef.current = newCanvas;
+
+    const resizeCanvas = () => {
+      canvasRef.current.setHeight(window.innerHeight - 90);
+      canvasRef.current.setWidth(window.innerWidth - 290);
+
+      canvasRef.current.calcOffset();
+      canvasRef.current.renderAll();
+    };
+
+    window.addEventListener("resize", resizeCanvas);
 
     return () => {
+      window.removeEventListener("resize", resizeCanvas);
       if (canvasRef.current) {
         canvasRef.current.dispose();
       }
