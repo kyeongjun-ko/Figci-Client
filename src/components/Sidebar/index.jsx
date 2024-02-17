@@ -144,7 +144,11 @@ function Sidebar({
             <h3 className="title">전체 변경 화면</h3>
             <h3 className="title-number">{framesInfo.length}</h3>
           </div>
-          <ul role="presentation" onClick={onFrameSelect}>
+          <ul
+            role="presentation"
+            className="frame-list-ui"
+            onClick={onFrameSelect}
+          >
             {framesInfo.map(frame => (
               <li
                 key={nanoid(10)}
@@ -184,12 +188,13 @@ const SidebarWrapper = styled.div`
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  width: 305px;
+  width: 300px;
+  height: calc(100vh - 150px);
   border-right: 2px solid #000000;
 
   select {
     width: 100%;
-    height: 64px;
+    height: 50px;
     padding: 0px 24px;
     border-radius: 8px;
     border: 2px solid #000000;
@@ -209,10 +214,14 @@ const SidebarWrapper = styled.div`
     background-color: #f1f3f5;
   }
 
+  .frame-list-ui {
+    overflow-y: auto;
+  }
+
   .frame-list {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    height: 60%;
     padding: 24px;
   }
 
