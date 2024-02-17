@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { fabric } from "fabric";
 import styled from "styled-components";
@@ -15,15 +15,16 @@ import useProjectVersionStore from "../../../store/projectVersion";
 import getDiffingResultQuery from "../../../services/getDiffingResultQuery";
 
 import figciLogo from "../../../assets/logo_figci.png";
-import typeMapper from "../../../services/renderFabric";
+import typeMapper from "../../../services/createFabricObjects";
 
 function DiffingResult() {
   const [frameList, setFrameList] = useState([]);
-  const [selectedFrame, setSelectedFrame] = useState("");
-  const [canvas, setCanvas] = useState("");
+  const [frameId, setFrameId] = useState("");
+  const [frameName, setFrameName] = useState("");
   const [toast, setToast] = useState({});
   const [isClickedNewVersion, setIsClickedNewVersion] = useState(false);
 
+  const canvasRef = useRef(null);
   const navigate = useNavigate();
 
   const versionStatus = useProjectVersionStore(state => state.byDates);
@@ -103,17 +104,15 @@ function DiffingResult() {
       const { x, y } = frameSubtree.property.absoluteBoundingBox;
 
       return {
-        dx: x < 0 ? Math.abs(x) + 20 : -1 * x + 20,
-        dy: y < 0 ? Math.abs(y) + 20 : -1 * y + 20,
+        dx: x < 0 ? Math.abs(x) + 50 : -1 * x + 20,
+        dy: y < 0 ? Math.abs(y) + 50 : -1 * y + 20,
       };
     };
 
     const parent = await matchType(frameJSON, fixCoord(frameJSON));
 
-    parent.set({
-      stoke: "black",
-      strokeWidth: 2,
-    });
+    parent.stroke = "black";
+    parent.strokeWidth = 2;
 
     fabricObject[frameJSON.frameId] = parent;
 
@@ -160,84 +159,106 @@ function DiffingResult() {
       fabricObject[frameJSON.frameId].absolutePositioned = true;
 
       for (const nodeId in fabricObject) {
-        if (nodeId !== frameJSON.frameId && !fabricObject[nodeId].clipPath) {
+        if (nodeId !== frameJSON.frameId && !fabricObject[nodeId]?.clipPath) {
           fabricObject[nodeId].clipPath = fabricObject[frameJSON.frameId];
         }
       }
     }
-
     for (const nodeId in fabricObject) {
-      canvas.add(fabricObject[nodeId]);
+      canvasRef.current.add(fabricObject[nodeId]);
     }
   };
 
   const renderFabricDifference = async differences => {
-    const frameId = selectedFrame.id;
     const fixCoord = frameSubtree => {
       const { x, y } = frameSubtree.property.absoluteBoundingBox;
 
       return {
-        dx: x < 0 ? Math.abs(x) + 20 : -1 * x + 20,
-        dy: y < 0 ? Math.abs(y) + 20 : -1 * y + 20,
+        dx: x < 0 ? Math.abs(x) + 50 : -1 * x + 20,
+        dy: y < 0 ? Math.abs(y) + 50 : -1 * y + 20,
       };
     };
 
     const fixOffset = fixCoord(diffingResult.content.frames[frameId]);
 
     const differenceArray = [];
-
     for (const nodeId in differences) {
       if (differences[nodeId].frameId === frameId) {
-        const [rectObject, textObject] = matchType(
-          differences[nodeId],
-          fixOffset,
-        );
+        const fabricObjects = matchType(differences[nodeId], fixOffset);
 
-        rectObject.on("mouseover", () => {
-          rectObject.set({
-            fill: "rgba(180, 46, 46, 0.7)",
-          });
-          textObject.set({
-            visible: true,
-          });
-          canvas.renderAll();
-        });
+        if (fabricObjects?.length > 0) {
+          const [rectObject, textObject] = fabricObjects;
 
-        rectObject.on("mouseout", () => {
-          rectObject.set({
-            fill: "rgba(180, 46, 46, 0.3)",
+          rectObject.on("mouseover", () => {
+            rectObject.set({
+              fill: "rgba(180, 46, 46, 0.7)",
+            });
+            textObject.set({
+              visible: true,
+            });
+            canvasRef.current.renderAll();
           });
-          textObject.set({
-            visible: false,
-          });
-          canvas.renderAll();
-        });
 
-        differenceArray.push(rectObject);
-        differenceArray.push(textObject);
+          rectObject.on("mouseout", () => {
+            rectObject.set({
+              fill: "rgba(255, 255, 255, 0)",
+            });
+            textObject.set({
+              visible: false,
+            });
+            canvasRef.current.renderAll();
+          });
+
+          differenceArray.push(rectObject);
+          differenceArray.push(textObject);
+        } else {
+          differenceArray.push(fabricObjects);
+        }
       }
     }
+    if (differenceArray?.length > 0) {
+      differenceArray.forEach(obj => {
+        canvasRef.current.add(obj);
+        obj.bringToFront();
+      });
+    }
 
-    differenceArray.forEach(e => {
-      canvas.add(e);
-    });
+    canvasRef.current.renderAll();
   };
 
-  const handleFrameSelect = (frameId, frameName) => {
-    setSelectedFrame({ id: frameId, name: frameName });
+  const handleFrameClick = ev => {
+    ev.preventDefault();
+
+    setFrameId(ev.target.getAttribute("data-id"));
+    setFrameName(ev.target.getAttribute("data-name"));
   };
+
+  const initCanvas = () =>
+    (canvasRef.current = new fabric.Canvas("canvas", {
+      width: 1200,
+      height: 800,
+      backgroundColor: "#CED4DA",
+      setZoom: 0.7,
+    }));
 
   useEffect(() => {
-    if (!canvas) {
-      const newCanvas = new fabric.Canvas("canvas", {
-        width: 1000,
-        height: 1000,
-        backgroundColor: "#CED4DA",
-      });
+    canvasRef.current = initCanvas();
 
-      setCanvas(newCanvas);
-    }
+    return () => {
+      if (canvasRef.current) {
+        canvasRef.current.dispose();
+      }
+    };
   }, []);
+
+  useEffect(() => {
+    if (frameList.length > 0) {
+      const firstFrame = frameList[0];
+
+      setFrameId(firstFrame.id);
+      setFrameName(firstFrame.name);
+    }
+  }, [frameList]);
 
   useEffect(() => {
     if (diffingResult) {
@@ -260,19 +281,16 @@ function DiffingResult() {
   }, [diffingResult]);
 
   useEffect(() => {
-    if (diffingResult) {
-      const frameId = selectedFrame.id;
-
+    if (diffingResult && frameId) {
       const renderFabricOnCanvas = async content => {
-        canvas.clear();
-
-        await renderFabricFrame(content.frame[frameId]);
-        renderFabricDifference(content.difference);
+        await renderFabricFrame(content.frames[frameId]);
+        renderFabricDifference(content.differences);
       };
-
+      canvasRef.current.clear();
       renderFabricOnCanvas(diffingResult.content);
+      canvasRef.current.renderAll();
     }
-  }, [selectedFrame]);
+  }, [frameId]);
 
   return (
     <>
@@ -288,7 +306,7 @@ function DiffingResult() {
             <Description
               className="re-version-description"
               size="medium"
-              text="비교하기 버튼을 누르면 현재 화면에서 벗어나게 됩니다.\n보고계신 정보는 저장되지 않아요."
+              text="버튼을 누르면 현재 화면에서 벗어나게 됩니다.\n보고계신 정보는 저장되지 않아요."
             />
           </TextWrapper>
           <ButtonWrapper>
@@ -341,6 +359,7 @@ function DiffingResult() {
                 usingCase="line"
                 handleClick={ev => {
                   ev.preventDefault();
+
                   setIsClickedNewVersion(true);
                 }}
               >
@@ -358,9 +377,11 @@ function DiffingResult() {
           <Sidebar
             framesInfo={frameList}
             projectUrl={projectUrl}
-            onFrameSelect={handleFrameSelect}
+            onFrameSelect={handleFrameClick}
+            selectedFrameId={frameId}
+            selectedFrameName={frameName}
           />
-          <Canvas id="canvas" />
+          <canvas id="canvas" ref={canvasRef} />
         </div>
       </ResultWrapper>
       {toast.status && (
@@ -370,9 +391,6 @@ function DiffingResult() {
   );
 }
 
-const Canvas = styled.canvas`
-  z-index: 15;
-`;
 const ResultWrapper = styled.div`
   display: flex;
   flex-direction: column;
