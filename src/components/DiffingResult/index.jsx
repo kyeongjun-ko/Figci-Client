@@ -22,6 +22,8 @@ function DiffingResult() {
   const [frameId, setFrameId] = useState("");
   const [frameName, setFrameName] = useState("");
   const [toast, setToast] = useState({});
+  const [isDragging, setIsDragging] = useState(false);
+  const [lastCoord, setLastCoord] = useState({ lastX: 0, lastY: 0 });
   const [isClickedNewVersion, setIsClickedNewVersion] = useState(false);
 
   const canvasRef = useRef(null);
@@ -98,15 +100,17 @@ function DiffingResult() {
 
     const imageURLs = await requestFetch();
 
-    const fabricObject = {};
+    const fabricObject = new Map();
 
     const fixCoord = frameSubtree => {
       const { x, y } = frameSubtree.property.absoluteBoundingBox;
 
-      return {
+      const result = {
         dx: x < 0 ? Math.abs(x) + 50 : -1 * x + 20,
         dy: y < 0 ? Math.abs(y) + 50 : -1 * y + 20,
       };
+
+      return result;
     };
 
     const parent = await matchType(frameJSON, fixCoord(frameJSON));
@@ -114,7 +118,7 @@ function DiffingResult() {
     parent.stroke = "black";
     parent.strokeWidth = 2;
 
-    fabricObject[frameJSON.frameId] = parent;
+    fabricObject.set(frameJSON.frameId, parent);
 
     for (const nodeId in frameJSON.nodes) {
       if (frameJSON.nodes[nodeId].property.fills[0]?.imageRef) {
@@ -125,9 +129,9 @@ function DiffingResult() {
         }
       }
 
-      fabricObject[nodeId] = matchType(
-        frameJSON.nodes[nodeId],
-        fixCoord(frameJSON),
+      fabricObject.set(
+        nodeId,
+        await matchType(frameJSON.nodes[nodeId], fixCoord(frameJSON)),
       );
     }
 
@@ -139,7 +143,7 @@ function DiffingResult() {
         targetNode.property.clipsContent &&
         targetNode.property.clipsContent === true
       ) {
-        fabricObject[nodeId].absolutePositioned = true;
+        fabricObject.get(nodeId).absolutePositioned = true;
 
         targetNode.property.overrides?.forEach(node => {
           if (node.overriddenFields.includes("fills")) {
@@ -151,32 +155,41 @@ function DiffingResult() {
       while (childrenIds.length) {
         const clipTargetId = childrenIds.pop();
 
-        fabricObject[clipTargetId].clipPath = fabricObject[nodeId];
+        fabricObject.get(clipTargetId).clipPath = fabricObject.get(nodeId);
       }
     }
 
     if (frameJSON.property.clipsContent === true) {
-      fabricObject[frameJSON.frameId].absolutePositioned = true;
+      fabricObject.get(frameJSON.frameId).absolutePositioned = true;
 
       for (const nodeId in fabricObject) {
-        if (nodeId !== frameJSON.frameId && !fabricObject[nodeId]?.clipPath) {
-          fabricObject[nodeId].clipPath = fabricObject[frameJSON.frameId];
+        if (
+          nodeId !== frameJSON.frameId &&
+          !fabricObject.get(nodeId)?.clipPath
+        ) {
+          fabricObject.get(nodeId).clipPath = fabricObject.get(
+            frameJSON.frameId,
+          );
         }
       }
     }
-    for (const nodeId in fabricObject) {
-      canvasRef.current.add(fabricObject[nodeId]);
-    }
+
+    const fabricObjectArray = [...fabricObject.values()];
+    const objectGroup = new fabric.Group(fabricObjectArray);
+
+    canvasRef.current.add(objectGroup);
   };
 
   const renderFabricDifference = async differences => {
     const fixCoord = frameSubtree => {
       const { x, y } = frameSubtree.property.absoluteBoundingBox;
 
-      return {
+      const result = {
         dx: x < 0 ? Math.abs(x) + 50 : -1 * x + 20,
         dy: y < 0 ? Math.abs(y) + 50 : -1 * y + 20,
       };
+
+      return result;
     };
 
     const fixOffset = fixCoord(diffingResult.content.frames[frameId]);
@@ -184,7 +197,7 @@ function DiffingResult() {
     const differenceArray = [];
     for (const nodeId in differences) {
       if (differences[nodeId].frameId === frameId) {
-        const fabricObjects = matchType(differences[nodeId], fixOffset);
+        const fabricObjects = await matchType(differences[nodeId], fixOffset);
 
         if (fabricObjects?.length > 0) {
           const [rectObject, textObject] = fabricObjects;
@@ -232,14 +245,6 @@ function DiffingResult() {
     setFrameId(ev.target.getAttribute("data-id"));
     setFrameName(ev.target.getAttribute("data-name"));
   };
-
-  const initCanvas = () =>
-    (canvasRef.current = new fabric.Canvas("canvas", {
-      width: 1200,
-      height: 800,
-      backgroundColor: "#CED4DA",
-      setZoom: 0.7,
-    }));
 
   useEffect(() => {
     const initCanvas = () =>
@@ -301,34 +306,40 @@ function DiffingResult() {
   }, [frameList]);
 
   useEffect(() => {
-    if (diffingResult) {
-      if (diffingResult.result === "error") {
-        setToast({ status: true, message: diffingResult.message });
+    if (!diffingResult) {
+      return;
+    }
 
-        return;
-      }
+    if (diffingResult.result === "error") {
+      setToast({ status: true, message: diffingResult.message });
 
-      const frames = [];
+      return;
+    }
 
-      for (const frameId in diffingResult.content.frames) {
-        const frame = diffingResult.content.frames[frameId];
+    const frames = [];
 
-        frames.push({ name: frame.name, id: frameId });
-      }
+    for (const frameId in diffingResult.content.frames) {
+      const frame = diffingResult.content.frames[frameId];
 
       setFrameList(frames);
+
+      frames.push({ name: frame.name, id: frameId });
     }
   }, [diffingResult]);
 
   useEffect(() => {
-    if (diffingResult && frameId) {
+    if (!(diffingResult && frameId)) {
       const renderFabricOnCanvas = async content => {
         await renderFabricFrame(content.frames[frameId]);
         renderFabricDifference(content.differences);
       };
-      canvasRef.current.clear();
+
+      if (canvasRef.current) {
+        canvasRef.current.remove(...canvasRef.current.getObjects());
+      }
       renderFabricOnCanvas(diffingResult.content);
       canvasRef.current.renderAll();
+      return;
     }
   }, [frameId]);
 
@@ -520,8 +531,8 @@ const ResultWrapper = styled.div`
     display: flex;
     align-items: center;
     box-sizing: border-box;
-    width: 305px;
-    min-width: 305px;
+    width: 300px;
+    min-width: 290px;
     padding: 24px 40px;
     border-right: 2px solid #000000;
     border-bottom: 2px solid #000000;

@@ -207,7 +207,6 @@ const SidebarWrapper = styled.div`
     font-weight: 500;
     line-height: 28px;
   }
-
   .page {
     padding: 24px;
 

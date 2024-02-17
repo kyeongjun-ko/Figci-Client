@@ -47,6 +47,8 @@ const renderImg = async (el, number) => {
           top: y + addNumber.dy,
           width,
           height,
+          rx: el.property?.cornerRadius,
+          ry: el.property?.cornerRadius,
           absolutePositioned: true,
         });
 
@@ -103,7 +105,35 @@ const renderRect = async (el, number) => {
     rx: style.cornerRadius || 0,
     ry: style.cornerRadius || 0,
     visible: true,
+    evented: true,
   });
+};
+
+const renderFrame = async (el, number) => {
+  const style = el.property;
+  const bgColor = style.fills[0]?.color ?? style.backgroundColor ?? null;
+  const { strokes } = style;
+
+  const frameObject = new fabric.Rect({
+    left: style.absoluteBoundingBox.x + number.dx,
+    top: style.absoluteBoundingBox.y + number.dy,
+    width: style.absoluteBoundingBox.width,
+    height: style.absoluteBoundingBox.height,
+    fill:
+      bgColor &&
+      `rgba(${bgColor.r * 255}, ${bgColor.g * 255}, ${bgColor.b * 255}, ${bgColor.a})`,
+    opacity: style.fills[0]?.opacity ?? bgColor.a,
+    stroke: strokes.length
+      ? `rgba(${strokes[0].color.r * 255}, ${strokes[0].color.g * 255}, ${strokes[0].color.b * 255}, ${strokes[0].color.a})`
+      : 0,
+    strokeAlign: style.strokeAlign,
+    rx: style.cornerRadius || 0,
+    ry: style.cornerRadius || 0,
+    visible: true,
+    evented: true,
+  });
+
+  return frameObject;
 };
 
 const renderEllipse = async (el, number) => {
@@ -130,7 +160,7 @@ const renderEllipse = async (el, number) => {
       ? `rgba(${strokes[0].color.r * 255}, ${strokes[0].color.g * 255}, ${strokes[0].color.b * 255}, ${strokes[0].color.a})`
       : 0,
     strokeAlign: style.strokeAlign && style.strokeAlign,
-    angle: style.property.arcData.endingAngle,
+    angle: style.property?.arcData?.endingAngle,
     visible: true,
   });
 };
@@ -186,7 +216,7 @@ const renderDifference = (el, number) => {
     top: y + number.dy - 15,
     width: width + 20,
     height: height + 20,
-    fill: "rgba(180, 46, 46, 0.3)",
+    fill: "rgba(180, 46, 46, 0)",
     stroke: "rgba(243, 7, 7, 0.7)",
     strokeWidth: 2,
     strokeOpacity: 1,
@@ -219,17 +249,59 @@ const renderDifference = (el, number) => {
   return [diffRect, diffContent];
 };
 
+const renderNewFrame = (el, number) => {
+  const { x, y, width, height } = el.position;
+
+  const diffRect = new fabric.Rect({
+    left: x + number.dx - 10,
+    top: y + number.dy - 10,
+    width: width + 20,
+    height: height + 20,
+    fill: "rgba(3, 148, 16, 0)",
+    stroke: "rgba(3, 148, 16, 0.7)",
+    strokeWidth: 2,
+    strokeOpacity: 1,
+    rx: 5,
+    ry: 5,
+  });
+
+  const diffContent = new fabric.Textbox(
+    createDiffText(el.differenceInformation),
+    {
+      left: x + number.dx - 10 + width + 30,
+      top: y + number.dy - 10,
+      width: 400,
+      fontFamily: "Noto Sans KR",
+      fontWeight: 600,
+      fontStyle: "normal",
+      textAlign: "center",
+      fontSize: 12,
+      fill: "rgba(255, 255, 255, 1)",
+      backgroundColor: "rgba(0, 0, 0, 0.8)",
+      opacity: 0.85,
+      lineHeight: 1.2,
+      hasBorders: true,
+      borderColor: "rgba(0, 0, 0, 0.8)",
+      visible: false,
+    },
+  );
+
+  return [diffRect, diffContent];
+};
+
 const typeMapper = {
   GROUP: renderRect,
   RECTANGLE: renderRect,
   TEXT: renderText,
   INSTANCE: renderRect,
-  FRAME: renderRect,
+  FRAME: renderFrame,
   REGULAR_POLYGON: renderTriangle,
   VECTOR: renderRect,
   COMPONENT: renderRect,
   ELLIPSE: renderEllipse,
   MODIFIED: renderDifference,
+  NEW: renderNewFrame,
+  BOOLEAN_OPERATION: renderRect,
 };
 
 export default typeMapper;
