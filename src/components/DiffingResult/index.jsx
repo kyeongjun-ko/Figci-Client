@@ -74,14 +74,17 @@ function DiffingResult() {
   };
 
   useEffect(() => {
-    const initCanvas = () =>
-      (canvasRef.current = new fabric.Canvas("canvas", {
+    const initCanvas = () => {
+      const canvasInit = new fabric.Canvas("canvas", {
         width: window.innerWidth,
         height: window.innerHeight,
         backgroundColor: "#CED4DA",
         setZoom: 0.3,
         selection: false,
-      }));
+      });
+
+      return canvasInit;
+    };
 
     const newCanvas = initCanvas();
     newCanvas.on("mouse:wheel", opt => {
