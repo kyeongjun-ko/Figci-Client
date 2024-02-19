@@ -1,23 +1,100 @@
 const createDiffText = diffTextObject => {
-  let differenceTexts = "";
+  const propertyParser = propertyString => {
+    return propertyString.replaceAll(/\.\d/g, "");
+  };
+  const differenceTexts = {};
 
-  for (const propertyKey in diffTextObject) {
-    const propertyValue = diffTextObject[propertyKey];
+  for (const property in diffTextObject) {
+    const value = diffTextObject[property];
 
-    const [propTitle, ...propDetail] = propertyKey.split(".");
-    const [beforeValue, afterValue] = propertyValue.split("=>");
-
-    if (beforeValue === undefined) {
-      differenceTexts += propDetail
-        ? `${propTitle} ${propDetail} 속성 ${afterValue} 추가.\n`
-        : `${propTitle} 속성 ${afterValue} 추가.\n`;
+    if (property.includes("absoluteBoundingBox")) {
+      if (property.includes(".x") || property.includes(".y")) {
+        if (differenceTexts.Position) {
+          differenceTexts.Position = {
+            ...differenceTexts.Position,
+            [propertyParser(property)]: value,
+          };
+        } else {
+          differenceTexts.Position = {
+            [propertyParser(property)]: value,
+          };
+        }
+      } else if (property.includes(".width") || property.includes(".height")) {
+        if (differenceTexts.Size) {
+          differenceTexts.Size = {
+            ...differenceTexts.Size,
+            [propertyParser(property)]: value,
+          };
+        } else {
+          differenceTexts.Size = {
+            [propertyParser(property)]: value,
+          };
+        }
+      }
+    } else if (property.includes("characters") || property.includes("font")) {
+      if (differenceTexts.Text) {
+        differenceTexts.Text = {
+          ...differenceTexts.Text,
+          [propertyParser(property)]: value,
+        };
+      } else {
+        differenceTexts.Text = {
+          [propertyParser(property)]: value,
+        };
+      }
+    } else if (property.includes("Color") || property.includes("background")) {
+      if (differenceTexts.Color) {
+        differenceTexts.Color = {
+          ...differenceTexts.Color,
+          [propertyParser(property)]: value,
+        };
+      } else {
+        differenceTexts.Color = {
+          [propertyParser(property)]: value,
+        };
+      }
+    } else if (differenceTexts.Etc) {
+      differenceTexts.Etc = {
+        ...differenceTexts.Etc,
+        [propertyParser(property)]: value,
+      };
     } else {
-      differenceTexts += propDetail
-        ? `${propTitle} 속성 ${beforeValue} => ${afterValue}.\n`
-        : `${propTitle} ${propDetail} 속성 ${beforeValue} => ${afterValue}\n`;
+      differenceTexts.Etc = {
+        [propertyParser(property)]: value,
+      };
     }
   }
-  return differenceTexts;
-};
 
+  let differenceResult = "";
+  for (const type in differenceTexts) {
+    const propValue = differenceTexts[type];
+
+    differenceResult += `\n  ${type}\n`;
+
+    for (const prop in propValue) {
+      const changeResult = propValue[prop];
+      const [beforeValue, afterValue] = changeResult.split("=>");
+
+      if (beforeValue === undefined && afterValue !== undefined) {
+        if (!isNaN(afterValue)) {
+          differenceResult += `   ${prop}: ${Number(afterValue).toFixed(1)} 추가됨.\n`;
+        } else {
+          differenceResult += `   ${prop}: ${afterValue} 추가됨.\n`;
+        }
+      } else if (beforeValue !== undefined && afterValue === undefined) {
+        if (!isNaN(beforeValue)) {
+          differenceResult += `   ${prop}: ${Number(beforeValue).toFixed(1)} 삭제됨.\n`;
+        } else {
+          differenceResult += `   ${prop}: ${beforeValue} 삭제됨.\n`;
+        }
+      } else if (!isNaN(beforeValue) && !isNaN(afterValue)) {
+        differenceResult += `   ${prop}: ${Number(beforeValue).toFixed(1)} => ${Number(afterValue).toFixed(1)}.\n`;
+      } else {
+        differenceResult += `   ${prop}: ${changeResult}.\n`;
+      }
+    }
+  }
+
+  return differenceResult;
+};
 export default createDiffText;
