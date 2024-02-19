@@ -1,6 +1,19 @@
 import { fabric } from "fabric";
 import createDiffText from "../utils/createDiffText";
 
+fabric.Textbox.prototype.set({
+  _getNonTransformedDimensions() {
+    return new fabric.Point(this.width, this.height).scalarAdd(this.padding);
+  },
+  _calculateCurrentDimensions() {
+    return fabric.util.transformPoint(
+      this._getTransformedDimensions(),
+      this.getViewportTransform(),
+      true,
+    );
+  },
+});
+
 const renderImg = async (el, number) => {
   const position = el.property.absoluteBoundingBox;
 
@@ -234,11 +247,11 @@ const renderDifference = (el, number) => {
       fontFamily: "Noto Sans KR",
       fontWeight: 600,
       fontStyle: "normal",
-      textAlign: "center",
-      fontSize: 12,
+      textAlign: "left",
+      fontSize: 20,
       fill: "rgba(255, 255, 255, 1)",
       backgroundColor: "rgba(0, 0, 0, 0.8)",
-      opacity: 0.85,
+      opacity: 0.8,
       lineHeight: 1.2,
       hasBorders: true,
       borderColor: "rgba(0, 0, 0, 0.8)",
@@ -270,11 +283,13 @@ const renderNewFrame = (el, number) => {
     {
       left: x + number.dx - 10 + width + 30,
       top: y + number.dy - 10,
+      rx: 10,
+      ry: 10,
       width: 400,
       fontFamily: "Noto Sans KR",
       fontWeight: 600,
       fontStyle: "normal",
-      textAlign: "center",
+      textAlign: "left",
       fontSize: 12,
       fill: "rgba(255, 255, 255, 1)",
       backgroundColor: "rgba(0, 0, 0, 0.8)",
@@ -285,6 +300,48 @@ const renderNewFrame = (el, number) => {
       visible: false,
     },
   );
+
+  return [diffRect, diffContent];
+};
+
+const renderNewFrameInfo = (el, number) => {
+  const { x, y, width, height } = el.property.absoluteBoundingBox;
+
+  const diffRect = new fabric.Rect({
+    left: x + number.dx - 10,
+    top: y + number.dy - 10,
+    width: width + 20,
+    height: height + 20,
+    fill: "rgba(3, 148, 16, 0)",
+    stroke: "rgba(3, 148, 16, 0.7)",
+    strokeWidth: 2,
+    strokeOpacity: 1,
+    rx: 5,
+    ry: 5,
+  });
+
+  const diffContent = new fabric.Textbox("새로 생성된 프레임 입니다.", {
+    left: x + number.dx - 10 + width + 30,
+    top: y + number.dy - 10,
+    rx: 10,
+    ry: 10,
+    width: 200,
+    padding: 20,
+    isWrapping: true,
+    splitByGrapheme: true,
+    fontFamily: "Noto Sans KR",
+    fontWeight: 500,
+    fontStyle: "normal",
+    textAlign: "left",
+    fontSize: 16,
+    fill: "rgba(255, 255, 255, 1)",
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    opacity: 0.85,
+    lineHeight: 1.2,
+    hasBorders: true,
+    borderColor: "rgba(0, 0, 0, 0.8)",
+    visible: false,
+  });
 
   return [diffRect, diffContent];
 };
@@ -302,6 +359,7 @@ const typeMapper = {
   MODIFIED: renderDifference,
   NEW: renderNewFrame,
   BOOLEAN_OPERATION: renderRect,
+  NEW_FRAME: renderNewFrameInfo,
 };
 
 export default typeMapper;
