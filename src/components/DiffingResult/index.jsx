@@ -15,15 +15,17 @@ import useProjectVersionStore from "../../../store/projectVersion";
 import getDiffingResultQuery from "../../../services/getDiffingResultQuery";
 
 import figciLogo from "../../../assets/logo_figci.png";
-import typeMapper from "../../../services/createFabricObjects";
+import renderFabricDifference from "../../../services/renderFabricDifference";
+import fetchImageUrl from "../../../utils/fetchImage";
+import renderFabricFrame from "../../../services/renderFabricFrame";
+import fixRenderCoord from "../../../utils/fixRenderCoord";
 
 function DiffingResult() {
   const [frameList, setFrameList] = useState([]);
   const [frameId, setFrameId] = useState("");
   const [frameName, setFrameName] = useState("");
   const [toast, setToast] = useState({});
-  const [isDragging, setIsDragging] = useState(false);
-  const [lastCoord, setLastCoord] = useState({ lastX: 0, lastY: 0 });
+  const [imageUrl, setImageUrl] = useState({});
   const [isClickedNewVersion, setIsClickedNewVersion] = useState(false);
 
   const canvasRef = useRef(null);
@@ -64,181 +66,6 @@ function DiffingResult() {
   const beforeVersionLabel = getVersionLabel(beforeDate, beforeVersion);
   const afterVersionLabel = getVersionLabel(afterDate, afterVersion);
 
-  const matchType = async (el, number) => {
-    if (!el.type) {
-      const getDefaultFunction = typeMapper.RECTANGLE;
-      const fabricObject = await getDefaultFunction(el, number);
-
-      return fabricObject;
-    }
-
-    const getTypeFunction = typeMapper[el.type];
-
-    if (getTypeFunction) {
-      const fabricObject = await getTypeFunction(el, number);
-
-      return fabricObject;
-    }
-  };
-
-  const renderFabricFrame = async frameJSON => {
-    const baseFigmaURL = `/v1/files/${projectKey}/images`;
-    const token = JSON.parse(localStorage.getItem("FigmaToken")).access_token;
-
-    const requestFetch = async () => {
-      const fetchData = await fetch(baseFigmaURL, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const fetchJson = await fetchData.json();
-
-      return fetchJson.meta.images;
-    };
-
-    const imageURLs = await requestFetch();
-
-    const fabricObject = new Map();
-
-    const fixCoord = frameSubtree => {
-      const { x, y } = frameSubtree.property.absoluteBoundingBox;
-
-      const result = {
-        dx: x < 0 ? Math.abs(x) + 50 : -1 * x + 20,
-        dy: y < 0 ? Math.abs(y) + 50 : -1 * y + 20,
-      };
-
-      return result;
-    };
-
-    const parent = await matchType(frameJSON, fixCoord(frameJSON));
-
-    parent.stroke = "black";
-    parent.strokeWidth = 2;
-
-    fabricObject.set(frameJSON.frameId, parent);
-
-    for (const nodeId in frameJSON.nodes) {
-      if (frameJSON.nodes[nodeId].property.fills[0]?.imageRef) {
-        const { imageRef } = frameJSON.nodes[nodeId].property.fills[0];
-
-        if (imageURLs[imageRef]) {
-          frameJSON.nodes[nodeId].property.imageURL = imageURLs[imageRef];
-        }
-      }
-
-      fabricObject.set(
-        nodeId,
-        await matchType(frameJSON.nodes[nodeId], fixCoord(frameJSON)),
-      );
-    }
-
-    for (const nodeId in frameJSON.nodes) {
-      const targetNode = frameJSON.nodes[nodeId];
-      const childrenIds = [];
-
-      if (
-        targetNode.property.clipsContent &&
-        targetNode.property.clipsContent === true
-      ) {
-        fabricObject.get(nodeId).absolutePositioned = true;
-
-        targetNode.property.overrides?.forEach(node => {
-          if (node.overriddenFields.includes("fills")) {
-            childrenIds.push(node.id);
-          }
-        });
-      }
-
-      while (childrenIds.length) {
-        const clipTargetId = childrenIds.pop();
-
-        fabricObject.get(clipTargetId).clipPath = fabricObject.get(nodeId);
-      }
-    }
-
-    if (frameJSON.property.clipsContent === true) {
-      fabricObject.get(frameJSON.frameId).absolutePositioned = true;
-
-      for (const nodeId in fabricObject) {
-        if (
-          nodeId !== frameJSON.frameId &&
-          !fabricObject.get(nodeId)?.clipPath
-        ) {
-          fabricObject.get(nodeId).clipPath = fabricObject.get(
-            frameJSON.frameId,
-          );
-        }
-      }
-    }
-
-    const fabricObjectArray = [...fabricObject.values()];
-    const objectGroup = new fabric.Group(fabricObjectArray);
-
-    canvasRef.current.add(objectGroup);
-  };
-
-  const renderFabricDifference = async differences => {
-    const fixCoord = frameSubtree => {
-      const { x, y } = frameSubtree.property.absoluteBoundingBox;
-
-      const result = {
-        dx: x < 0 ? Math.abs(x) + 50 : -1 * x + 20,
-        dy: y < 0 ? Math.abs(y) + 50 : -1 * y + 20,
-      };
-
-      return result;
-    };
-
-    const fixOffset = fixCoord(diffingResult.content.frames[frameId]);
-
-    const differenceArray = [];
-    for (const nodeId in differences) {
-      if (differences[nodeId].frameId === frameId) {
-        const fabricObjects = await matchType(differences[nodeId], fixOffset);
-
-        if (fabricObjects?.length > 0) {
-          const [rectObject, textObject] = fabricObjects;
-
-          rectObject.on("mouseover", () => {
-            rectObject.set({
-              fill: "rgba(180, 46, 46, 0.7)",
-            });
-            textObject.set({
-              visible: true,
-            });
-            canvasRef.current.renderAll();
-          });
-
-          rectObject.on("mouseout", () => {
-            rectObject.set({
-              fill: "rgba(255, 255, 255, 0)",
-            });
-            textObject.set({
-              visible: false,
-            });
-            canvasRef.current.renderAll();
-          });
-
-          differenceArray.push(rectObject);
-          differenceArray.push(textObject);
-        } else {
-          differenceArray.push(fabricObjects);
-        }
-      }
-    }
-    if (differenceArray?.length > 0) {
-      differenceArray.forEach(obj => {
-        canvasRef.current.add(obj);
-        obj.bringToFront();
-      });
-    }
-
-    canvasRef.current.renderAll();
-  };
-
   const handleFrameClick = ev => {
     ev.preventDefault();
 
@@ -249,7 +76,7 @@ function DiffingResult() {
   useEffect(() => {
     const initCanvas = () =>
       (canvasRef.current = new fabric.Canvas("canvas", {
-        width: window.innerHeight,
+        width: window.innerWidth,
         height: window.innerHeight,
         backgroundColor: "#CED4DA",
         setZoom: 0.3,
@@ -262,10 +89,7 @@ function DiffingResult() {
       let Zoom = canvasRef.current.getZoom();
 
       Zoom *= 0.999 ** delta;
-      Zoom = Zoom > 20 ? 20 : Zoom < 0.01 && 0.01;
-
-      if (Zoom > 20) Zoom = 20;
-      if (Zoom < 0.01) Zoom = 0.01;
+      Zoom = Math.max(0.01, Math.min(20, Zoom));
 
       canvasRef.current.zoomToPoint(
         { x: opt.e.offsetX, y: opt.e.offsetY },
@@ -279,17 +103,28 @@ function DiffingResult() {
     canvasRef.current = newCanvas;
 
     const resizeCanvas = () => {
-      canvasRef.current.setHeight(window.innerHeight - 90);
-      canvasRef.current.setWidth(window.innerWidth - 290);
+      if (canvasRef.current) {
+        canvasRef.current.setHeight(window.innerHeight - 90);
+        canvasRef.current.setWidth(window.innerWidth - 290);
 
-      canvasRef.current.calcOffset();
-      canvasRef.current.renderAll();
+        canvasRef.current.calcOffset();
+        canvasRef.current.renderAll();
+      }
     };
 
     window.addEventListener("resize", resizeCanvas);
 
+    const fetchFigmaImage = async () => {
+      const urlObject = await fetchImageUrl(projectKey);
+
+      setImageUrl(urlObject);
+    };
+
+    fetchFigmaImage();
+
     return () => {
       window.removeEventListener("resize", resizeCanvas);
+
       if (canvasRef.current) {
         canvasRef.current.dispose();
       }
@@ -321,25 +156,50 @@ function DiffingResult() {
     for (const frameId in diffingResult.content.frames) {
       const frame = diffingResult.content.frames[frameId];
 
-      setFrameList(frames);
-
       frames.push({ name: frame.name, id: frameId });
     }
+
+    setFrameList(frames);
   }, [diffingResult]);
 
   useEffect(() => {
-    if (!(diffingResult && frameId)) {
+    if (diffingResult && frameId) {
+      const fixOffset = fixRenderCoord(diffingResult.content.frames[frameId]);
+
       const renderFabricOnCanvas = async content => {
-        await renderFabricFrame(content.frames[frameId]);
-        renderFabricDifference(content.differences);
+        const isChangedFrame = Object.values(content.differences).map(
+          el => el.frameId,
+        );
+
+        await renderFabricFrame.call(
+          canvasRef.current,
+          content.frames[frameId],
+          imageUrl,
+        );
+        if (isChangedFrame.includes(frameId)) {
+          renderFabricDifference.call(
+            canvasRef.current,
+            content.differences,
+            fixOffset,
+            frameId,
+          );
+        } else {
+          content.frames[frameId].isNew = true;
+          renderFabricDifference.call(
+            canvasRef.current,
+            content.frames[frameId],
+            fixOffset,
+            frameId,
+          );
+        }
       };
 
       if (canvasRef.current) {
         canvasRef.current.remove(...canvasRef.current.getObjects());
       }
+
       renderFabricOnCanvas(diffingResult.content);
       canvasRef.current.renderAll();
-      return;
     }
   }, [frameId]);
 
