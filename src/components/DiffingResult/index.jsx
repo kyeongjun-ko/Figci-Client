@@ -19,13 +19,14 @@ import renderFabricDifference from "../../../services/renderFabricDifference";
 import fetchImageUrl from "../../../utils/fetchImage";
 import renderFabricFrame from "../../../services/renderFabricFrame";
 import fixCoordinate from "../../../utils/fixCoordinate";
+import isOwnProperty from "../../../utils/isOwnProperty";
 
 function DiffingResult() {
   const [frameList, setFrameList] = useState([]);
   const [frameId, setFrameId] = useState("");
   const [frameName, setFrameName] = useState("");
   const [toast, setToast] = useState({});
-  const [imageUrl, setImageUrl] = useState({});
+  const [imageUrl, setImageUrl] = useState("");
   const [isClickedNewVersion, setIsClickedNewVersion] = useState(false);
 
   const canvasRef = useRef(null);
@@ -115,9 +116,8 @@ function DiffingResult() {
     window.addEventListener("resize", resizeCanvas);
 
     const fetchImageURLToFigma = async () => {
-      const imgUrlObject = await fetchImageUrl(projectKey, setToast);
-
-      setImageUrl(imgUrlObject);
+      const imageUrlObject = await fetchImageUrl(projectKey, setToast);
+      setImageUrl(imageUrlObject);
     };
 
     if (!imageUrl) {
@@ -156,12 +156,7 @@ function DiffingResult() {
     const frames = [];
 
     for (const frameId in diffingResult.content.frames) {
-      if (
-        diffingResult.content.frames.hasOwnProperty.call(
-          diffingResult.content.frames,
-          frameId,
-        )
-      ) {
+      if (isOwnProperty(diffingResult.content.frames, frameId)) {
         const frame = diffingResult.content.frames[frameId];
 
         frames.push({ name: frame.name, id: frameId });
@@ -173,9 +168,8 @@ function DiffingResult() {
 
   useEffect(() => {
     const fetchImageURLToFigma = async () => {
-      const imgUrlObject = await fetchImageUrl(projectKey, setToast);
-
-      setImageUrl(imgUrlObject);
+      const imageUrlObject = await fetchImageUrl(projectKey, setToast);
+      setImageUrl(imageUrlObject);
     };
 
     if (!imageUrl) {

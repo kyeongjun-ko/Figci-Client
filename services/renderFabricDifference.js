@@ -1,33 +1,20 @@
-import typeMapper from "./createFabricObjects";
-
-const matchType = async (el, number) => {
-  if (!el.type) {
-    const getDefaultFunction = typeMapper.RECTANGLE;
-    const fabricObject = await getDefaultFunction(el, number);
-
-    return fabricObject;
-  }
-
-  const getTypeFunction = typeMapper[el.type];
-
-  if (getTypeFunction) {
-    const fabricObject = await getTypeFunction(el, number);
-
-    return fabricObject;
-  }
-};
+import createFabric from "./createFabricObjects";
+import getRGBNumber from "../utils/getRGBNumber";
 
 const renderFabricDifference = async function (differences, fixCoord, frameId) {
   const differenceArray = [];
 
   if (differences.isNew) {
     differences.type = "NEW_FRAME";
-    const fabricObjects = await matchType(differences, fixCoord);
+    const fabricObjects = await createFabric(differences, fixCoord);
     const [rectObject, textObject] = fabricObjects;
 
     rectObject.on("mouseover", () => {
+      const [r, g, b, o] = getRGBNumber(rectObject.fill);
+      const mouseoverColor = `rgba(${r}, ${g}, ${b}, 0.5)`;
+
       rectObject.set({
-        fill: "rgba(53, 180, 46, 0.7)",
+        fill: mouseoverColor,
       });
       textObject.set({
         visible: true,
@@ -36,8 +23,11 @@ const renderFabricDifference = async function (differences, fixCoord, frameId) {
     });
 
     rectObject.on("mouseout", () => {
+      const [r, g, b, o] = getRGBNumber(rectObject.fill);
+      const mouseoutColor = `rgba(${r}, ${g}, ${b}, 0)`;
+
       rectObject.set({
-        fill: "rgba(255, 255, 255, 0)",
+        fill: mouseoutColor,
       });
       textObject.set({
         visible: false,
@@ -49,12 +39,15 @@ const renderFabricDifference = async function (differences, fixCoord, frameId) {
   } else {
     for (const nodeId in differences) {
       if (differences[nodeId].frameId === frameId) {
-        const fabricObjects = await matchType(differences[nodeId], fixCoord);
+        const fabricObjects = await createFabric(differences[nodeId], fixCoord);
         const [rectObject, textObject] = fabricObjects;
 
         rectObject.on("mouseover", () => {
+          const [r, g, b, o] = getRGBNumber(rectObject.fill);
+          const mouseoverColor = `rgba(${r}, ${g}, ${b}, 0.5)`;
+
           rectObject.set({
-            fill: "rgba(180, 46, 46, 0.7)",
+            fill: mouseoverColor,
           });
           textObject.set({
             visible: true,
@@ -63,8 +56,11 @@ const renderFabricDifference = async function (differences, fixCoord, frameId) {
         });
 
         rectObject.on("mouseout", () => {
+          const [r, g, b, o] = getRGBNumber(rectObject.fill);
+          const mouseoutColor = `rgba(${r}, ${g}, ${b}, 0)`;
+
           rectObject.set({
-            fill: "rgba(255, 255, 255, 0)",
+            fill: mouseoutColor,
           });
           textObject.set({
             visible: false,

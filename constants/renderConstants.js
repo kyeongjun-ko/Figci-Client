@@ -1,5 +1,5 @@
 const FABRIC_RENDER = {
-  STROKE_WIDTH: 2,
+  STROKE_WIDTH: 3,
   STROKE_COLOR: "black",
   TEXT_PADDING: 40,
   TEXT_WEIGHT: 500,
@@ -10,10 +10,10 @@ const FABRIC_RENDER = {
   TEXTBOX_OPACITY: 0.8,
   TEXT_BACKGROUND_COLOR: "rgba(0, 0, 0, 0.8)",
   TEXT_COLOR: "rgba(255, 255, 255, 1)",
-  NEW_RECT_COLOR: "rgba(3, 148, 16, 0.3)",
-  NEW_RECT_STROKE: "rgba(3, 148, 16, 0.8)",
-  CHANGE_RECT_COLOR: "rgba(180, 46, 46, 0.3)",
-  CHANGE_RECT_STROKE: "rgba(180, 46, 46, 0.8)",
+  NEW_RECT_COLOR: "rgba(53, 180, 46, 0)",
+  NEW_RECT_STROKE: "rgba(53, 180, 46, 0.4)",
+  CHANGE_RECT_COLOR: "rgba(180, 46, 46, 0)",
+  CHANGE_RECT_STROKE: "rgba(180, 46, 46, 0.4)",
 };
 
 export default FABRIC_RENDER;
