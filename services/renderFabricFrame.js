@@ -1,24 +1,8 @@
 import { fabric } from "fabric";
 import fixCoordinate from "../utils/fixCoordinate";
-import typeMapper from "./createFabricObjects";
+import createFabric from "./createFabricObjects";
 import FABRIC_RENDER from "../constants/renderConstants";
-
-const matchType = async (figmaNode, offsetCoordinates) => {
-  if (!figmaNode.type) {
-    const getDefaultFunction = typeMapper.RECTANGLE;
-    const fabricObject = await getDefaultFunction(figmaNode, offsetCoordinates);
-
-    return fabricObject;
-  }
-
-  const getTypeFunction = typeMapper[figmaNode.type];
-
-  if (getTypeFunction) {
-    const fabricObject = await getTypeFunction(figmaNode, offsetCoordinates);
-
-    return fabricObject;
-  }
-};
+import isOwnProperty from "../utils/isOwnProperty";
 
 const renderFabricFrame = async function (frameJSON, imageUrl) {
   const fabricObject = new Map();
@@ -27,7 +11,10 @@ const renderFabricFrame = async function (frameJSON, imageUrl) {
     frameJSON.type = "";
   }
 
-  const frameRootObject = await matchType(frameJSON, fixCoordinate(frameJSON));
+  const frameRootObject = await createFabric(
+    frameJSON,
+    fixCoordinate(frameJSON),
+  );
 
   frameRootObject.stroke = FABRIC_RENDER.STROKE_COLOR;
   frameRootObject.strokeWidth = FABRIC_RENDER.STROKE_WIDTH;
@@ -35,13 +22,11 @@ const renderFabricFrame = async function (frameJSON, imageUrl) {
   fabricObject.set(frameJSON.frameId, frameRootObject);
 
   for (const nodeId in frameJSON.nodes) {
-    if (frameJSON.nodes.hasOwnProperty.call(frameJSON.nodes, nodeId)) {
+    if (isOwnProperty(frameJSON.nodes, nodeId)) {
       const isIncludeImage =
         frameJSON.nodes[nodeId].property.fills[0]?.imageRef;
-
       if (isIncludeImage) {
         const { imageRef } = frameJSON.nodes[nodeId].property.fills[0];
-
         if (imageUrl[imageRef]) {
           frameJSON.nodes[nodeId].property.imageURL = imageUrl[imageRef];
         }
@@ -50,7 +35,7 @@ const renderFabricFrame = async function (frameJSON, imageUrl) {
 
     fabricObject.set(
       nodeId,
-      await matchType(frameJSON.nodes[nodeId], fixCoordinate(frameJSON)),
+      await createFabric(frameJSON.nodes[nodeId], fixCoordinate(frameJSON)),
     );
   }
 

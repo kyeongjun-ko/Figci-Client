@@ -1,4 +1,8 @@
 const createDiffText = diffTextObject => {
+  if (Object.keys(diffTextObject).length === 0) {
+    return "새로 생긴 노드 입니다.";
+  }
+
   const propertyParser = propertyString => {
     return propertyString.replaceAll(/\.\d/g, "");
   };

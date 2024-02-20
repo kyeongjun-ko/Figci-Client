@@ -37,16 +37,16 @@ const renderImage = async (nodeJSON, offsetCoordinates) => {
           absolutePositioned: true,
         });
 
-        fabric.Image.fromURL(nodeJSON.property.imageURL, img => {
-          img.set({
+        fabric.Image.fromURL(nodeJSON.property.imageURL, fabricImage => {
+          fabricImage.set({
             left: x + offsetCoordinates.dx,
             top: y + offsetCoordinates.dy,
           });
 
-          img.scaleToWidth(width);
-          img.clipPath = mask;
+          fabricImage.scaleToWidth(width);
+          fabricImage.clipPath = mask;
 
-          resolve(img);
+          resolve(fabricImage);
         });
       });
     };
@@ -71,16 +71,16 @@ const renderImage = async (nodeJSON, offsetCoordinates) => {
           absolutePositioned: true,
         });
 
-        fabric.Image.fromURL(nodeJSON.property.imageURL, img => {
-          img.set({
+        fabric.Image.fromURL(nodeJSON.property.imageURL, fabricImage => {
+          fabricImage.set({
             left: x + offsetCoordinates.dx,
             top: y + offsetCoordinates.dy,
           });
 
-          img.scaleToWidth(width);
-          img.clipPath = mask;
+          fabricImage.scaleToWidth(width);
+          fabricImage.clipPath = mask;
 
-          resolve(img);
+          resolve(fabricImage);
         });
       });
     };
@@ -220,11 +220,11 @@ const renderDifference = (node, offsetCoordinates) => {
     height: height + 20,
     fill: FABRIC_RENDER.CHANGE_RECT_COLOR,
     stroke: FABRIC_RENDER.CHANGE_RECT_STROKE,
-    strokeWidth: 2,
-    strokeOpacity: 1,
+    strokeWidth: FABRIC_RENDER.STROKE_WIDTH,
     rx: 5,
     ry: 5,
     evented: true,
+    hasBorders: true,
   });
 
   const diffContent = new fabric.Textbox(
@@ -238,7 +238,7 @@ const renderDifference = (node, offsetCoordinates) => {
       fontSize: FABRIC_RENDER.TEXT_SIZE,
       lineHeight: FABRIC_RENDER.TEXT_LINE_HEIGHT,
       padding: FABRIC_RENDER.TEXT_PADDING,
-      textBackgroundColor: FABRIC_RENDER.TEXT_BACKGROUND_COLOR,
+      backgroundColor: FABRIC_RENDER.TEXT_BACKGROUND_COLOR,
       opacity: 0.8,
       fill: FABRIC_RENDER.TEXT_COLOR,
       hasBorders: true,
@@ -260,10 +260,11 @@ const renderNewFrame = (node, offsetCoordinates) => {
     height: height + 20,
     fill: FABRIC_RENDER.NEW_RECT_COLOR,
     stroke: FABRIC_RENDER.NEW_RECT_STROKE,
-    strokeWidth: 2,
+    strokeWidth: FABRIC_RENDER.STROKE_WIDTH,
     strokeOpacity: 1,
     rx: 5,
     ry: 5,
+    hasBorders: true,
   });
 
   const diffContent = new fabric.Textbox(
@@ -277,7 +278,7 @@ const renderNewFrame = (node, offsetCoordinates) => {
       fontSize: FABRIC_RENDER.TEXT_SIZE,
       lineHeight: FABRIC_RENDER.TEXT_LINE_HEIGHT,
       padding: FABRIC_RENDER.TEXT_PADDING,
-      textBackgroundColor: FABRIC_RENDER.TEXT_BACKGROUND_COLOR,
+      backgroundColor: FABRIC_RENDER.TEXT_BACKGROUND_COLOR,
       opacity: 0.85,
       fill: FABRIC_RENDER.TEXT_COLOR,
       rx: 10,
@@ -302,7 +303,7 @@ const renderNewFrameInfo = (node, offsetCoordinates) => {
     height: height + 20,
     fill: FABRIC_RENDER.NEW_RECT_COLOR,
     stroke: FABRIC_RENDER.NEW_RECT_STROKE,
-    strokeWidth: 2,
+    strokeWidth: FABRIC_RENDER.STROKE_WIDTH,
     strokeOpacity: 1,
     rx: 5,
     ry: 5,
@@ -314,11 +315,10 @@ const renderNewFrameInfo = (node, offsetCoordinates) => {
     width: FABRIC_RENDER.TEXTBOX_WIDTH,
     fontFamily: FABRIC_RENDER.TEXT_FAMILY,
     fontWeight: FABRIC_RENDER.TEXT_WEIGHT,
-    textAlign: FABRIC_RENDER.TEXT_ALIGN,
     fontSize: FABRIC_RENDER.TEXT_SIZE,
     lineHeight: FABRIC_RENDER.TEXT_LINE_HEIGHT,
     padding: FABRIC_RENDER.TEXT_PADDING,
-    textBackgroundColor: FABRIC_RENDER.TEXT_BACKGROUND_COLOR,
+    backgroundColor: FABRIC_RENDER.TEXT_BACKGROUND_COLOR,
     opacity: FABRIC_RENDER.TEXTBOX_OPACITY,
     fill: FABRIC_RENDER.TEXT_COLOR,
     borderColor: "rgba(0, 0, 0, 1)",
@@ -332,20 +332,30 @@ const renderNewFrameInfo = (node, offsetCoordinates) => {
   return [diffRect, diffContent];
 };
 
-const typeMapper = {
-  GROUP: renderRect,
-  RECTANGLE: renderRect,
-  TEXT: renderText,
-  INSTANCE: renderRect,
-  FRAME: renderFrame,
-  REGULAR_POLYGON: renderTriangle,
-  VECTOR: renderRect,
+const renderFunctionByFigmaType = {
+  BOOLEAN_OPERATION: renderRect,
   COMPONENT: renderRect,
   ELLIPSE: renderEllipse,
+  FRAME: renderFrame,
+  GROUP: renderRect,
+  INSTANCE: renderRect,
   MODIFIED: renderDifference,
   NEW: renderNewFrame,
-  BOOLEAN_OPERATION: renderRect,
   NEW_FRAME: renderNewFrameInfo,
+  REGULAR_POLYGON: renderTriangle,
+  RECTANGLE: renderRect,
+  TEXT: renderText,
+  VECTOR: renderRect,
 };
 
-export default typeMapper;
+const createFabric = async (figmaNode, offsetCoordinates) => {
+  const createFabricObject = !figmaNode.type
+    ? renderFunctionByFigmaType.RECTANGLE
+    : renderFunctionByFigmaType[figmaNode.type];
+
+  const fabricObject = await createFabricObject(figmaNode, offsetCoordinates);
+
+  return fabricObject;
+};
+
+export default createFabric;
