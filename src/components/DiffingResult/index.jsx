@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { fabric } from "fabric";
 import styled from "styled-components";
@@ -15,14 +15,21 @@ import useProjectVersionStore from "../../../store/projectVersion";
 import getDiffingResultQuery from "../../../services/getDiffingResultQuery";
 
 import figciLogo from "../../../assets/logo_figci.png";
+import renderFabricDifference from "../../../services/renderFabricDifference";
+import fetchImageUrl from "../../../utils/fetchImage";
+import renderFabricFrame from "../../../services/renderFabricFrame";
+import fixCoordinate from "../../../utils/fixCoordinate";
+import isOwnProperty from "../../../utils/isOwnProperty";
 
 function DiffingResult() {
   const [frameList, setFrameList] = useState([]);
-  const [selectedFrame, setSelectedFrame] = useState("");
-  const [canvas, setCanvas] = useState("");
+  const [frameId, setFrameId] = useState("");
+  const [frameName, setFrameName] = useState("");
   const [toast, setToast] = useState({});
+  const [imageUrl, setImageUrl] = useState("");
   const [isClickedNewVersion, setIsClickedNewVersion] = useState(false);
 
+  const canvasRef = useRef(null);
   const navigate = useNavigate();
 
   const versionStatus = useProjectVersionStore(state => state.byDates);
@@ -60,39 +67,156 @@ function DiffingResult() {
   const beforeVersionLabel = getVersionLabel(beforeDate, beforeVersion);
   const afterVersionLabel = getVersionLabel(afterDate, afterVersion);
 
+  const handleFrameClick = ev => {
+    ev.preventDefault();
+
+    setFrameId(ev.target.getAttribute("data-id"));
+    setFrameName(ev.target.getAttribute("data-name"));
+  };
+
   useEffect(() => {
-    if (diffingResult) {
-      if (diffingResult.result === "error") {
-        setToast({ status: true, message: diffingResult.message });
+    const initCanvas = () => {
+      const canvasInit = new fabric.Canvas("canvas", {
+        width: window.innerWidth,
+        height: window.innerHeight,
+        backgroundColor: "#CED4DA",
+        setZoom: 0.3,
+        selection: false,
+      });
 
-        return;
+      return canvasInit;
+    };
+
+    const newCanvas = initCanvas();
+    newCanvas.on("mouse:wheel", ev => {
+      const delta = ev.e.deltaY;
+      let Zoom = canvasRef.current.getZoom();
+
+      Zoom *= 0.999 ** delta;
+      Zoom = Math.max(0.01, Math.min(20, Zoom));
+
+      canvasRef.current.zoomToPoint({ x: ev.e.offsetX, y: ev.e.offsetY }, Zoom);
+
+      ev.e.preventDefault();
+      ev.e.stopPropagation();
+    });
+
+    canvasRef.current = newCanvas;
+
+    const resizeCanvas = () => {
+      if (canvasRef.current) {
+        canvasRef.current.setHeight(window.innerHeight - 90);
+        canvasRef.current.setWidth(window.innerWidth - 290);
+
+        canvasRef.current.calcOffset();
+        canvasRef.current.renderAll();
       }
+    };
 
-      const frames = [];
+    window.addEventListener("resize", resizeCanvas);
 
-      for (const frameId in diffingResult.content.frames) {
+    const fetchImageURLToFigma = async () => {
+      const imageUrlObject = await fetchImageUrl(projectKey, setToast);
+      setImageUrl(imageUrlObject);
+    };
+
+    if (!imageUrl) {
+      fetchImageURLToFigma();
+    }
+
+    return () => {
+      window.removeEventListener("resize", resizeCanvas);
+
+      if (canvasRef.current) {
+        canvasRef.current.dispose();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (frameList.length > 0) {
+      const firstFrame = frameList[0];
+
+      setFrameId(firstFrame.id);
+      setFrameName(firstFrame.name);
+    }
+  }, [frameList]);
+
+  useEffect(() => {
+    if (!diffingResult) {
+      return;
+    }
+
+    if (diffingResult.result === "error") {
+      setToast({ status: true, message: diffingResult.message });
+
+      return;
+    }
+
+    const frames = [];
+
+    for (const frameId in diffingResult.content.frames) {
+      if (isOwnProperty(diffingResult.content.frames, frameId)) {
         const frame = diffingResult.content.frames[frameId];
 
         frames.push({ name: frame.name, id: frameId });
       }
-
-      setFrameList(frames);
     }
+
+    setFrameList(frames);
   }, [diffingResult]);
 
   useEffect(() => {
-    const newCanvas = new fabric.Canvas("canvas", {
-      width: 650,
-      height: 650,
-      backgroundColor: "#CED4DA",
-    });
+    const fetchImageURLToFigma = async () => {
+      const imageUrlObject = await fetchImageUrl(projectKey, setToast);
+      setImageUrl(imageUrlObject);
+    };
 
-    setCanvas(newCanvas);
-  }, []);
+    if (!imageUrl) {
+      fetchImageURLToFigma();
+    }
 
-  const handleFrameSelect = (frameId, frameName) => {
-    setSelectedFrame({ id: frameId, name: frameName });
-  };
+    if (diffingResult && frameId) {
+      const offsetCoordinates = fixCoordinate(
+        diffingResult.content.frames[frameId],
+      );
+
+      const renderFabricOnCanvas = async content => {
+        const isChangedFrame = Object.values(content.differences).map(
+          differenceNode => differenceNode.frameId,
+        );
+
+        await renderFabricFrame.call(
+          canvasRef.current,
+          content.frames[frameId],
+          imageUrl,
+        );
+        if (isChangedFrame.includes(frameId)) {
+          renderFabricDifference.call(
+            canvasRef.current,
+            content.differences,
+            offsetCoordinates,
+            frameId,
+          );
+        } else {
+          content.frames[frameId].isNew = true;
+          renderFabricDifference.call(
+            canvasRef.current,
+            content.frames[frameId],
+            offsetCoordinates,
+            frameId,
+          );
+        }
+      };
+
+      if (canvasRef.current) {
+        canvasRef.current.remove(...canvasRef.current.getObjects());
+      }
+
+      renderFabricOnCanvas(diffingResult.content);
+      canvasRef.current.renderAll();
+    }
+  }, [frameId]);
 
   return (
     <>
@@ -108,7 +232,7 @@ function DiffingResult() {
             <Description
               className="re-version-description"
               size="medium"
-              text="비교하기 버튼을 누르면 현재 화면에서 벗어나게 됩니다.\n보고계신 정보는 저장되지 않아요."
+              text="버튼을 누르면 현재 화면에서 벗어나게 됩니다.\n보고계신 정보는 저장되지 않아요."
             />
           </TextWrapper>
           <ButtonWrapper>
@@ -161,6 +285,7 @@ function DiffingResult() {
                 usingCase="line"
                 handleClick={ev => {
                   ev.preventDefault();
+
                   setIsClickedNewVersion(true);
                 }}
               >
@@ -178,9 +303,11 @@ function DiffingResult() {
           <Sidebar
             framesInfo={frameList}
             projectUrl={projectUrl}
-            onFrameSelect={handleFrameSelect}
+            onFrameSelect={handleFrameClick}
+            selectedFrameId={frameId}
+            selectedFrameName={frameName}
           />
-          <canvas id="canvas" />
+          <canvas id="canvas" ref={canvasRef} />
         </div>
       </ResultWrapper>
       {toast.status && (
@@ -279,8 +406,8 @@ const ResultWrapper = styled.div`
     display: flex;
     align-items: center;
     box-sizing: border-box;
-    width: 305px;
-    min-width: 305px;
+    width: 300px;
+    min-width: 290px;
     padding: 24px 40px;
     border-right: 2px solid #000000;
     border-bottom: 2px solid #000000;

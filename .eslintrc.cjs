@@ -48,5 +48,7 @@ module.exports = {
     "guard-for-in": "off",
     "consistent-return": "off",
     "no-shadow": "off",
+    "no-await-in-loop": "off",
+    "no-restricted-globals": "off",
   },
 };

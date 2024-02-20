@@ -64,7 +64,7 @@ function NewProject() {
     const projectUrl = inputValue;
 
     if (allVersions.result === "error") {
-      setToast({ status: true, message: "allVersions.message" });
+      setToast({ status: true, message: allVersions.message });
 
       return;
     }

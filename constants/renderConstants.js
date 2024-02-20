@@ -1,0 +1,19 @@
+const FABRIC_RENDER = {
+  STROKE_WIDTH: 3,
+  STROKE_COLOR: "black",
+  TEXT_PADDING: 40,
+  TEXT_WEIGHT: 500,
+  TEXT_SIZE: 20,
+  TEXT_FAMILY: "Noto Sans KR",
+  TEXT_LINE_HEIGHT: 1.2,
+  TEXTBOX_WIDTH: 550,
+  TEXTBOX_OPACITY: 0.8,
+  TEXT_BACKGROUND_COLOR: "rgba(0, 0, 0, 0.8)",
+  TEXT_COLOR: "rgba(255, 255, 255, 1)",
+  NEW_RECT_COLOR: "rgba(53, 180, 46, 0)",
+  NEW_RECT_STROKE: "rgba(53, 180, 46, 0.4)",
+  CHANGE_RECT_COLOR: "rgba(180, 46, 46, 0)",
+  CHANGE_RECT_STROKE: "rgba(180, 46, 46, 0.4)",
+};
+
+export default FABRIC_RENDER;
