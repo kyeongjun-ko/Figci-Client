@@ -10,6 +10,10 @@ const FABRIC_RENDER = {
   TEXTBOX_OPACITY: 0.8,
   TEXT_BACKGROUND_COLOR: "rgba(0, 0, 0, 0.8)",
   TEXT_COLOR: "rgba(255, 255, 255, 1)",
+  NEW_RECT_COLOR: "rgba(3, 148, 16, 0.3)",
+  NEW_RECT_STROKE: "rgba(3, 148, 16, 0.8)",
+  CHANGE_RECT_COLOR: "rgba(180, 46, 46, 0.3)",
+  CHANGE_RECT_STROKE: "rgba(180, 46, 46, 0.8)",
 };
 
 export default FABRIC_RENDER;

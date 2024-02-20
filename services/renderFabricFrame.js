@@ -1,19 +1,20 @@
 import { fabric } from "fabric";
 import fixCoordinate from "../utils/fixCoordinate";
 import typeMapper from "./createFabricObjects";
+import FABRIC_RENDER from "../constants/renderConstants";
 
-const matchType = async (el, number) => {
-  if (!el.type) {
+const matchType = async (figmaNode, offsetCoordinates) => {
+  if (!figmaNode.type) {
     const getDefaultFunction = typeMapper.RECTANGLE;
-    const fabricObject = await getDefaultFunction(el, number);
+    const fabricObject = await getDefaultFunction(figmaNode, offsetCoordinates);
 
     return fabricObject;
   }
 
-  const getTypeFunction = typeMapper[el.type];
+  const getTypeFunction = typeMapper[figmaNode.type];
 
   if (getTypeFunction) {
-    const fabricObject = await getTypeFunction(el, number);
+    const fabricObject = await getTypeFunction(figmaNode, offsetCoordinates);
 
     return fabricObject;
   }
@@ -28,17 +29,22 @@ const renderFabricFrame = async function (frameJSON, imageUrl) {
 
   const frameRootObject = await matchType(frameJSON, fixCoordinate(frameJSON));
 
-  frameRootObject.stroke = "black";
-  frameRootObject.strokeWidth = 2;
+  frameRootObject.stroke = FABRIC_RENDER.STROKE_COLOR;
+  frameRootObject.strokeWidth = FABRIC_RENDER.STROKE_WIDTH;
 
   fabricObject.set(frameJSON.frameId, frameRootObject);
 
   for (const nodeId in frameJSON.nodes) {
-    if (frameJSON.nodes[nodeId].property.fills[0]?.imageRef) {
-      const { imageRef } = frameJSON.nodes[nodeId].property.fills[0];
+    if (frameJSON.nodes.hasOwnProperty.call(frameJSON.nodes, nodeId)) {
+      const isIncludeImage =
+        frameJSON.nodes[nodeId].property.fills[0]?.imageRef;
 
-      if (imageUrl[imageRef]) {
-        frameJSON.nodes[nodeId].property.imageURL = imageUrl[imageRef];
+      if (isIncludeImage) {
+        const { imageRef } = frameJSON.nodes[nodeId].property.fills[0];
+
+        if (imageUrl[imageRef]) {
+          frameJSON.nodes[nodeId].property.imageURL = imageUrl[imageRef];
+        }
       }
     }
 
@@ -53,39 +59,44 @@ const renderFabricFrame = async function (frameJSON, imageUrl) {
     const childrenIds = [];
 
     if (targetNode.property.clipsContent) {
-      const clipTarget = fabricObject.get(nodeId);
-      clipTarget.absolutePositioned = true;
-      fabricObject.set(nodeId, clipTarget);
+      const clipTargetNode = fabricObject.get(nodeId);
 
-      targetNode.property.overrides?.forEach(node => {
-        if (node.overriddenFields.includes("fills")) {
-          childrenIds.push(node.id);
+      clipTargetNode.absolutePositioned = true;
+      fabricObject.set(nodeId, clipTargetNode);
+
+      targetNode.property.overrides?.forEach(innerNode => {
+        if (innerNode.overriddenFields.includes("fills")) {
+          childrenIds.push(innerNode.id);
         }
       });
     }
 
     while (childrenIds.length) {
-      const clipChildId = childrenIds.pop();
-      const clipParent = fabricObject.get(nodeId);
-      const clipChild = fabricObject.get(clipChildId);
-      clipChild.clipPath = clipParent;
-      fabricObject.set(clipChildId, clipChild);
+      const clippedTargetNodeId = childrenIds.pop();
+
+      const clipTargetNode = fabricObject.get(nodeId);
+      const fabricChildObject = fabricObject.get(clippedTargetNodeId);
+
+      fabricChildObject.clipPath = clipTargetNode;
+      fabricObject.set(clippedTargetNodeId, fabricChildObject);
     }
   }
 
   if (frameJSON.property.clipsContent === true) {
-    const clippedNode = fabricObject.get(frameJSON.frameId);
-    clippedNode.absolutePositioned = true;
-    fabricObject.set(frameJSON.frameId, clippedNode);
+    const clipTargetNode = fabricObject.get(frameJSON.frameId);
 
-    for (const nodeId in fabricObject) {
-      const isChildNode = nodeId !== frameJSON.frameId;
-      const isNotClipped = !fabricObject.get(nodeId)?.clipPath;
+    clipTargetNode.absolutePositioned = true;
+    fabricObject.set(frameJSON.frameId, clipTargetNode);
 
-      if (isChildNode && isNotClipped) {
-        const clipChild = fabricObject.get(nodeId);
-        clipChild.clipPath = clippedNode;
-        fabricObject.set(nodeId, clipChild);
+    for (const fabricObjectId in fabricObject) {
+      const isChildOfFrame = fabricObjectId !== frameJSON.frameId;
+      const isNotClipped = !fabricObject.get(fabricObjectId)?.clipPath;
+
+      if (isChildOfFrame && isNotClipped) {
+        const clippedTargetNode = fabricObject.get(fabricObjectId);
+
+        clippedTargetNode.clipPath = clipTargetNode;
+        fabricObject.set(fabricObjectId, clippedTargetNode);
       }
     }
   }

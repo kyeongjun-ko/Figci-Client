@@ -5,6 +5,8 @@ const fetchImageUrl = async function fetchFigmaAPI(projectKey, setToast) {
   try {
     if (!token) {
       setToast({ status: true, message: "Figma 토큰이 유효하지 않습니다." });
+
+      return;
     }
 
     const fetchFrameImageURLs = async () => {
@@ -17,6 +19,8 @@ const fetchImageUrl = async function fetchFigmaAPI(projectKey, setToast) {
 
       if (!fetchData.ok) {
         setToast({ status: true, message: "Figma API 호출에 실패했습니다" });
+
+        return;
       }
 
       const fetchJson = await fetchData.json();

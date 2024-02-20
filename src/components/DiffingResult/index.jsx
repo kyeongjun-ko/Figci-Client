@@ -114,13 +114,15 @@ function DiffingResult() {
 
     window.addEventListener("resize", resizeCanvas);
 
-    const fetchFigmaImage = async () => {
-      const urlObject = await fetchImageUrl(projectKey, setToast);
+    const fetchImageURLToFigma = async () => {
+      const imgUrlObject = await fetchImageUrl(projectKey, setToast);
 
-      setImageUrl(urlObject);
+      setImageUrl(imgUrlObject);
     };
 
-    fetchFigmaImage();
+    if (!imageUrl) {
+      fetchImageURLToFigma();
+    }
 
     return () => {
       window.removeEventListener("resize", resizeCanvas);
@@ -154,22 +156,42 @@ function DiffingResult() {
     const frames = [];
 
     for (const frameId in diffingResult.content.frames) {
-      const frame = diffingResult.content.frames[frameId];
+      if (
+        diffingResult.content.frames.hasOwnProperty.call(
+          diffingResult.content.frames,
+          frameId,
+        )
+      ) {
+        const frame = diffingResult.content.frames[frameId];
 
-      frames.push({ name: frame.name, id: frameId });
+        frames.push({ name: frame.name, id: frameId });
+      }
     }
 
     setFrameList(frames);
   }, [diffingResult]);
 
   useEffect(() => {
+    const fetchImageURLToFigma = async () => {
+      const imgUrlObject = await fetchImageUrl(projectKey, setToast);
+
+      setImageUrl(imgUrlObject);
+    };
+
+    if (!imageUrl) {
+      fetchImageURLToFigma();
+    }
+
     if (diffingResult && frameId) {
-      const fixOffset = fixCoordinate(diffingResult.content.frames[frameId]);
+      const offsetCoordinates = fixCoordinate(
+        diffingResult.content.frames[frameId],
+      );
 
       const renderFabricOnCanvas = async content => {
         const isChangedFrame = Object.values(content.differences).map(
-          el => el.frameId,
+          differenceNode => differenceNode.frameId,
         );
+
         await renderFabricFrame.call(
           canvasRef.current,
           content.frames[frameId],
@@ -179,7 +201,7 @@ function DiffingResult() {
           renderFabricDifference.call(
             canvasRef.current,
             content.differences,
-            fixOffset,
+            offsetCoordinates,
             frameId,
           );
         } else {
@@ -187,7 +209,7 @@ function DiffingResult() {
           renderFabricDifference.call(
             canvasRef.current,
             content.frames[frameId],
-            fixOffset,
+            offsetCoordinates,
             frameId,
           );
         }

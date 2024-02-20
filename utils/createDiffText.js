@@ -2,12 +2,16 @@ const createDiffText = diffTextObject => {
   const propertyParser = propertyString => {
     return propertyString.replaceAll(/\.\d/g, "");
   };
+
   const differenceTexts = {};
 
   for (const property in diffTextObject) {
     const value = diffTextObject[property];
 
-    if (property.includes("absoluteBoundingBox")) {
+    if (
+      property.includes("absoluteBoundingBox") ||
+      property.includes("absoluteRenderBounds")
+    ) {
       if (property.includes(".x") || property.includes(".y")) {
         if (differenceTexts.Position) {
           differenceTexts.Position = {
@@ -70,7 +74,7 @@ const createDiffText = diffTextObject => {
   for (const type in differenceTexts) {
     const propValue = differenceTexts[type];
 
-    differenceResult += `\n  ${type}\n`;
+    differenceResult += `\n${type}\n`;
 
     for (const prop in propValue) {
       const changeResult = propValue[prop];
@@ -78,20 +82,20 @@ const createDiffText = diffTextObject => {
 
       if (beforeValue === undefined && afterValue !== undefined) {
         if (!isNaN(afterValue)) {
-          differenceResult += `   ${prop}: ${Number(afterValue).toFixed(1)} 추가됨.\n`;
+          differenceResult += `${prop}: ${Number(afterValue).toFixed(1)} 추가됨.\n`;
         } else {
-          differenceResult += `   ${prop}: ${afterValue} 추가됨.\n`;
+          differenceResult += `${prop}: ${afterValue} 추가됨.\n`;
         }
       } else if (beforeValue !== undefined && afterValue === undefined) {
         if (!isNaN(beforeValue)) {
-          differenceResult += `   ${prop}: ${Number(beforeValue).toFixed(1)} 삭제됨.\n`;
+          differenceResult += `${prop}: ${Number(beforeValue).toFixed(1)} 삭제됨.\n`;
         } else {
-          differenceResult += `   ${prop}: ${beforeValue} 삭제됨.\n`;
+          differenceResult += `${prop}: ${beforeValue} 삭제됨.\n`;
         }
       } else if (!isNaN(beforeValue) && !isNaN(afterValue)) {
-        differenceResult += `   ${prop}: ${Number(beforeValue).toFixed(1)} => ${Number(afterValue).toFixed(1)}.\n`;
+        differenceResult += `${prop}: ${Number(beforeValue).toFixed(1)} => ${Number(afterValue).toFixed(1)}.\n`;
       } else {
-        differenceResult += `   ${prop}: ${changeResult}.\n`;
+        differenceResult += `${prop}: ${changeResult}.\n`;
       }
     }
   }
