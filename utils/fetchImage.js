@@ -1,23 +1,35 @@
-const fetchImageUrl = async function fetchFigmaAPI(projectKey) {
+const fetchImageUrl = async function fetchFigmaAPI(projectKey, setToast) {
   const baseFigmaURL = `/v1/files/${projectKey}/images`;
   const token = JSON.parse(localStorage.getItem("FigmaToken")).access_token;
 
-  const fetchFrameImageURLs = async () => {
-    const fetchData = await fetch(baseFigmaURL, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+  try {
+    if (!token) {
+      setToast({ status: true, message: "Figma 토큰이 유효하지 않습니다." });
+    }
 
-    const fetchJson = await fetchData.json();
+    const fetchFrameImageURLs = async () => {
+      const fetchData = await fetch(baseFigmaURL, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    return fetchJson.meta.images;
-  };
+      if (!fetchData.ok) {
+        setToast({ status: true, message: "Figma API 호출에 실패했습니다" });
+      }
 
-  const imageURLs = await fetchFrameImageURLs();
+      const fetchJson = await fetchData.json();
 
-  return imageURLs;
+      return fetchJson.meta.images;
+    };
+
+    const imageURLs = await fetchFrameImageURLs();
+
+    return imageURLs;
+  } catch (error) {
+    setToast({ status: true, message: error.message });
+  }
 };
 
 export default fetchImageUrl;
