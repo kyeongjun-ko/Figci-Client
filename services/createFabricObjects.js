@@ -362,6 +362,7 @@ const renderFunctionByFigmaType = {
   RECTANGLE: renderRect,
   TEXT: renderText,
   VECTOR: renderRect,
+  LINE: renderRect,
 };
 
 const createFabric = async (figmaNode, offsetCoordinates) => {
