@@ -146,7 +146,7 @@ function Sidebar({
           </div>
           <ul
             role="presentation"
-            className="frame-list-ui"
+            className="frame-list-scroll"
             onClick={onFrameSelect}
           >
             {framesInfo.map(frame => (
@@ -213,7 +213,7 @@ const SidebarWrapper = styled.div`
     background-color: #f1f3f5;
   }
 
-  .frame-list-ui {
+  .frame-list-scroll {
     overflow-y: auto;
   }
 

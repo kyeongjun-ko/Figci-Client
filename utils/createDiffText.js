@@ -66,6 +66,7 @@ const createDiffText = diffTextObject => {
   }
 
   let differenceResult = "";
+
   for (const type in differenceTexts) {
     const propValue = differenceTexts[type];
 

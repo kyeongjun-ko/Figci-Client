@@ -18,7 +18,7 @@ import figciLogo from "../../../assets/logo_figci.png";
 import renderFabricDifference from "../../../services/renderFabricDifference";
 import fetchImageUrl from "../../../utils/fetchImage";
 import renderFabricFrame from "../../../services/renderFabricFrame";
-import fixRenderCoord from "../../../utils/fixRenderCoord";
+import fixCoordinate from "../../../utils/fixCoordinate";
 
 function DiffingResult() {
   const [frameList, setFrameList] = useState([]);
@@ -87,20 +87,17 @@ function DiffingResult() {
     };
 
     const newCanvas = initCanvas();
-    newCanvas.on("mouse:wheel", opt => {
-      const delta = opt.e.deltaY;
+    newCanvas.on("mouse:wheel", ev => {
+      const delta = ev.e.deltaY;
       let Zoom = canvasRef.current.getZoom();
 
       Zoom *= 0.999 ** delta;
       Zoom = Math.max(0.01, Math.min(20, Zoom));
 
-      canvasRef.current.zoomToPoint(
-        { x: opt.e.offsetX, y: opt.e.offsetY },
-        Zoom,
-      );
+      canvasRef.current.zoomToPoint({ x: ev.e.offsetX, y: ev.e.offsetY }, Zoom);
 
-      opt.e.preventDefault();
-      opt.e.stopPropagation();
+      ev.e.preventDefault();
+      ev.e.stopPropagation();
     });
 
     canvasRef.current = newCanvas;
@@ -118,7 +115,7 @@ function DiffingResult() {
     window.addEventListener("resize", resizeCanvas);
 
     const fetchFigmaImage = async () => {
-      const urlObject = await fetchImageUrl(projectKey);
+      const urlObject = await fetchImageUrl(projectKey, setToast);
 
       setImageUrl(urlObject);
     };
@@ -167,13 +164,12 @@ function DiffingResult() {
 
   useEffect(() => {
     if (diffingResult && frameId) {
-      const fixOffset = fixRenderCoord(diffingResult.content.frames[frameId]);
+      const fixOffset = fixCoordinate(diffingResult.content.frames[frameId]);
 
       const renderFabricOnCanvas = async content => {
         const isChangedFrame = Object.values(content.differences).map(
           el => el.frameId,
         );
-
         await renderFabricFrame.call(
           canvasRef.current,
           content.frames[frameId],

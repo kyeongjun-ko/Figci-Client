@@ -1,4 +1,4 @@
-const fixRenderCoord = frameSubtree => {
+const fixCoordinate = frameSubtree => {
   const { x, y } = frameSubtree.property.absoluteBoundingBox;
 
   const result = {
@@ -9,4 +9,4 @@ const fixRenderCoord = frameSubtree => {
   return result;
 };
 
-export default fixRenderCoord;
+export default fixCoordinate;

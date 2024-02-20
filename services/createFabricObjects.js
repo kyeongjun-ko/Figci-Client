@@ -14,27 +14,27 @@ fabric.Textbox.prototype.set({
   },
 });
 
-const renderImg = async (el, number) => {
-  const position = el.property.absoluteBoundingBox;
+const renderImg = async (nodeJSON, offsetCoord) => {
+  const position = nodeJSON.property.absoluteBoundingBox;
 
-  if (el.type === "ELLIPSE") {
-    const imageObject = async (addNumber, offSet) => {
-      const { x, y, width, height } = offSet;
+  if (nodeJSON.type === "ELLIPSE") {
+    const imageObject = async (offsetCoordinates, positions) => {
+      const { x, y, width, height } = positions;
 
       return new Promise(resolve => {
-        fabric.Image.fromURL(el.property.imageURL, img => {
-          img.set({
-            left: x + addNumber.dx,
-            top: y + addNumber.dy,
-          });
+        const mask = new fabric.Ellipse({
+          left: x + offsetCoordinates.dx,
+          top: y + offsetCoordinates.dy,
+          rx: width / 2,
+          ry: height / 2,
+          angle: nodeJSON.property.arcData.endingAngle,
+          absolutePositioned: true,
+        });
 
-          const mask = new fabric.Ellipse({
-            left: x + addNumber.dx,
-            top: y + addNumber.dy,
-            rx: width / 2,
-            ry: height / 2,
-            angle: el.property.arcData.endingAngle,
-            absolutePositioned: true,
+        fabric.Image.fromURL(nodeJSON.property.imageURL, img => {
+          img.set({
+            left: x + offsetCoordinates.dx,
+            top: y + offsetCoordinates.dy,
           });
 
           img.scaleToWidth(width);
@@ -45,47 +45,43 @@ const renderImg = async (el, number) => {
       });
     };
 
-    const result = await imageObject(number, position);
+    const fabricImageObject = await imageObject(offsetCoord, position);
 
-    return result;
+    return fabricImageObject;
   }
 
-  if (el.type === "RECTANGLE") {
-    const imageObject = async (addNumber, offSet) => {
-      const { x, y, width, height } = offSet;
+  if (nodeJSON.type === "RECTANGLE") {
+    const imageObject = async (offsetCoordinates, positions) => {
+      const { x, y, width, height } = positions;
 
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
         const mask = new fabric.Rect({
-          left: x + addNumber.dx,
-          top: y + addNumber.dy,
+          left: x + offsetCoordinates.dx,
+          top: y + offsetCoordinates.dy,
           width,
           height,
-          rx: el.property?.cornerRadius,
-          ry: el.property?.cornerRadius,
+          rx: nodeJSON.property?.cornerRadius,
+          ry: nodeJSON.property?.cornerRadius,
           absolutePositioned: true,
         });
 
-        fabric.Image.fromURL(el.property.imageURL, img => {
-          try {
-            img.set({
-              left: x + addNumber.dx,
-              top: y + addNumber.dy,
-            });
+        fabric.Image.fromURL(nodeJSON.property.imageURL, img => {
+          img.set({
+            left: x + offsetCoordinates.dx,
+            top: y + offsetCoordinates.dy,
+          });
 
-            img.scaleToWidth(width);
-            img.clipPath = mask;
+          img.scaleToWidth(width);
+          img.clipPath = mask;
 
-            resolve(img);
-          } catch {
-            reject(new Error("이미지 로드에 실패했습니다."));
-          }
+          resolve(img);
         });
       });
     };
 
-    const result = await imageObject(number, position);
+    const fabricImageObject = await imageObject(offsetCoord, offsetCoord);
 
-    return result;
+    return fabricImageObject;
   }
 };
 
@@ -209,13 +205,13 @@ const renderText = (el, number) => {
 
 const renderTriangle = (el, number) => {
   const style = el.property;
-  const point = el.property.absoluteBoundingBox;
+  const position = el.property.absoluteBoundingBox;
 
   return new fabric.Triangle({
-    left: point.x + number.dx,
-    top: point.y + number.dy,
-    width: point.width,
-    height: style.rotation > 0 ? point.height : -point.height,
+    left: position.x + number.dx,
+    top: position.y + number.dy,
+    width: position.width,
+    height: style.rotation > 0 ? position.height : -position.height,
     fill: `rgba(${style.fills[0].color.r * 255}, ${style.fills[0].color.g * 255}, ${style.fills[0].color.b * 255}, ${style.fills[0].color.a})`,
     strokeWidth: style.strokeWeight,
   });
