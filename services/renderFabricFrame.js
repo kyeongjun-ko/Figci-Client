@@ -79,7 +79,10 @@ const renderFabricFrame = async function (frameJSON, imageUrl) {
     fabricObject.set(frameJSON.frameId, clippedNode);
 
     for (const nodeId in fabricObject) {
-      if (nodeId !== frameJSON.frameId && !fabricObject.get(nodeId)?.clipPath) {
+      const isChildNode = nodeId !== frameJSON.frameId;
+      const isNotClipped = !fabricObject.get(nodeId)?.clipPath;
+
+      if (isChildNode && isNotClipped) {
         const clipChild = fabricObject.get(nodeId);
         clipChild.clipPath = clippedNode;
         fabricObject.set(nodeId, clipChild);

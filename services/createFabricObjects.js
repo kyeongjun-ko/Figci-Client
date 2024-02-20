@@ -25,9 +25,9 @@ const renderImg = async (nodeJSON, offsetCoord) => {
         const mask = new fabric.Ellipse({
           left: x + offsetCoordinates.dx,
           top: y + offsetCoordinates.dy,
+          angle: nodeJSON.property.arcData.endingAngle,
           rx: width / 2,
           ry: height / 2,
-          angle: nodeJSON.property.arcData.endingAngle,
           absolutePositioned: true,
         });
 
@@ -85,27 +85,28 @@ const renderImg = async (nodeJSON, offsetCoord) => {
   }
 };
 
-const renderRect = async (el, number) => {
-  const isExistImg = el.property.fills[0]?.imageRef ?? null;
+const renderRect = async (node, offsetCoordinates) => {
+  const isExistImg = node.property.fills[0]?.imageRef ?? null;
 
   if (isExistImg) {
-    const imageFabricObject = await renderImg(el, number);
+    const imageFabricObject = await renderImg(node, offsetCoordinates);
 
     return imageFabricObject;
   }
 
-  const style = el.property;
-  const bgColor = style.fills[0]?.color ?? style.backgroundColor ?? null;
+  const style = node.property;
+  const backgroundColor =
+    style.fills[0]?.color ?? style.backgroundColor ?? null;
   const { strokes } = style;
 
   return new fabric.Rect({
-    left: style.absoluteBoundingBox.x + number.dx,
-    top: style.absoluteBoundingBox.y + number.dy,
+    left: style.absoluteBoundingBox.x + offsetCoordinates.dx,
+    top: style.absoluteBoundingBox.y + offsetCoordinates.dy,
     width: style.absoluteBoundingBox.width,
     height: style.absoluteBoundingBox.height,
     fill:
-      bgColor &&
-      `rgba(${bgColor.r * 255}, ${bgColor.g * 255}, ${bgColor.b * 255}, ${bgColor.a})`,
+      backgroundColor &&
+      `rgba(${backgroundColor.r * 255}, ${backgroundColor.g * 255}, ${backgroundColor.b * 255}, ${backgroundColor.a})`,
     opacity: style.fills[0]?.opacity,
     stroke: strokes.length
       ? `rgba(${strokes[0].color.r * 255}, ${strokes[0].color.g * 255}, ${strokes[0].color.b * 255}, ${strokes[0].color.a})`
@@ -118,20 +119,21 @@ const renderRect = async (el, number) => {
   });
 };
 
-const renderFrame = async (el, number) => {
-  const style = el.property;
-  const bgColor = style.fills[0]?.color ?? style.backgroundColor ?? null;
+const renderFrame = async (node, offsetCoordinates) => {
+  const style = node.property;
+  const backgroundColor =
+    style.fills[0]?.color ?? style.backgroundColor ?? null;
   const { strokes } = style;
 
   const frameObject = new fabric.Rect({
-    left: style.absoluteBoundingBox.x + number.dx,
-    top: style.absoluteBoundingBox.y + number.dy,
+    left: style.absoluteBoundingBox.x + offsetCoordinates.dx,
+    top: style.absoluteBoundingBox.y + offsetCoordinates.dy,
     width: style.absoluteBoundingBox.width,
     height: style.absoluteBoundingBox.height,
     fill:
-      bgColor &&
-      `rgba(${bgColor.r * 255}, ${bgColor.g * 255}, ${bgColor.b * 255}, ${bgColor.a})`,
-    opacity: style.fills[0]?.opacity ?? bgColor.a,
+      backgroundColor &&
+      `rgba(${backgroundColor.r * 255}, ${backgroundColor.g * 255}, ${backgroundColor.b * 255}, ${backgroundColor.a})`,
+    opacity: style.fills[0]?.opacity ?? backgroundColor.a,
     stroke: strokes.length
       ? `rgba(${strokes[0].color.r * 255}, ${strokes[0].color.g * 255}, ${strokes[0].color.b * 255}, ${strokes[0].color.a})`
       : 0,
@@ -145,26 +147,27 @@ const renderFrame = async (el, number) => {
   return frameObject;
 };
 
-const renderEllipse = async (el, number) => {
-  const isExistImg = el.property.fills[0]?.imageRef ?? null;
+const renderEllipse = async (node, offsetCoordinates) => {
+  const isExistImg = node.property.fills[0]?.imageRef ?? null;
 
   if (isExistImg) {
-    const imageFabricObject = await renderImg(el, number);
+    const imageFabricObject = await renderImg(node, offsetCoordinates);
 
     return imageFabricObject;
   }
-  const style = el.property;
-  const bgColor = style.fills[0]?.color ?? style.backgroundColor ?? null;
+  const style = node.property;
+  const backgroundColor =
+    style.fills[0]?.color ?? style.backgroundColor ?? null;
   const { strokes } = style;
 
   return new fabric.Ellipse({
-    left: style.absoluteBoundingBox.x + number.dx,
-    top: style.absoluteBoundingBox.y + number.dy,
+    left: style.absoluteBoundingBox.x + offsetCoordinates.dx,
+    top: style.absoluteBoundingBox.y + offsetCoordinates.dy,
     rx: style.absoluteBoundingBox.width / 2,
     ry: style.absoluteBoundingBox.height / 2,
     fill:
-      bgColor &&
-      `rgba(${bgColor.r * 255}, ${bgColor.g * 255}, ${bgColor.b * 255}, ${bgColor.a})`,
+      backgroundColor &&
+      `rgba(${backgroundColor.r * 255}, ${backgroundColor.g * 255}, ${backgroundColor.b * 255}, ${backgroundColor.a})`,
     stroke: strokes.length
       ? `rgba(${strokes[0].color.r * 255}, ${strokes[0].color.g * 255}, ${strokes[0].color.b * 255}, ${strokes[0].color.a})`
       : 0,
@@ -174,19 +177,24 @@ const renderEllipse = async (el, number) => {
   });
 };
 
-const renderText = (el, number) => {
-  const style = el.property;
-  const bgColor = style.fills[0]?.color;
+const renderText = (node, offsetCoordinates) => {
+  const style = node.property;
+  const backgroundColor = style.fills[0]?.color;
   const { strokes } = style;
 
   return new fabric.Textbox(style.characters, {
-    left: style.absoluteBoundingBox.x + number.dx,
-    top: style.absoluteBoundingBox.y + number.dy,
+    left: style.absoluteBoundingBox.x + offsetCoordinates.dx,
+    top: style.absoluteBoundingBox.y + offsetCoordinates.dy,
     width: style.absoluteBoundingBox.width,
     height: style.style.lineHeightPx,
     fontSize: style.style.fontSize,
     fontFamily: style.style.fontFamily,
     fontWeight: style.style.fontWeight,
+    textAlign: style.style.textAlignHorizontal.toLowerCase(),
+    lineHeight: 1.2,
+    fill:
+      backgroundColor &&
+      `rgba(${backgroundColor.r * 255}, ${backgroundColor.g * 255}, ${backgroundColor.b * 255}, ${backgroundColor.a})`,
     stroke: strokes.length
       ? `rgba(${strokes[0].color.r * 255}, ${strokes[0].color.g * 255}, ${strokes[0].color.b * 255}, ${strokes[0].color.a})`
       : 0,
@@ -194,22 +202,17 @@ const renderText = (el, number) => {
     strokeDashArray: style.strokeAlign && style.strokeDashes,
     strokeLineCap: style.strokeLineCap && style.strokeLineCap,
     strokeLineJoin: style.strokeJoin && style.strokeJoin,
-    textAlign: style.style.textAlignHorizontal.toLowerCase(),
     verticalAlign: style.style.textAlignVertical.toLowerCase(),
-    lineHeight: 1.2,
-    fill:
-      bgColor &&
-      `rgba(${bgColor.r * 255}, ${bgColor.g * 255}, ${bgColor.b * 255}, ${bgColor.a})`,
   });
 };
 
-const renderTriangle = (el, number) => {
-  const style = el.property;
-  const position = el.property.absoluteBoundingBox;
+const renderTriangle = (node, offsetCoordinates) => {
+  const style = node.property;
+  const position = node.property.absoluteBoundingBox;
 
   return new fabric.Triangle({
-    left: position.x + number.dx,
-    top: position.y + number.dy,
+    left: position.x + offsetCoordinates.dx,
+    top: position.y + offsetCoordinates.dy,
     width: position.width,
     height: style.rotation > 0 ? position.height : -position.height,
     fill: `rgba(${style.fills[0].color.r * 255}, ${style.fills[0].color.g * 255}, ${style.fills[0].color.b * 255}, ${style.fills[0].color.a})`,
@@ -217,12 +220,12 @@ const renderTriangle = (el, number) => {
   });
 };
 
-const renderDifference = (el, number) => {
-  const { x, y, width, height } = el.position;
+const renderDifference = (node, offsetCoordinates) => {
+  const { x, y, width, height } = node.position;
 
   const diffRect = new fabric.Rect({
-    left: x + number.dx - 15,
-    top: y + number.dy - 15,
+    left: x + offsetCoordinates.dx - 15,
+    top: y + offsetCoordinates.dy - 15,
     width: width + 20,
     height: height + 20,
     fill: "rgba(180, 46, 46, 0)",
@@ -235,20 +238,20 @@ const renderDifference = (el, number) => {
   });
 
   const diffContent = new fabric.Textbox(
-    createDiffText(el.differenceInformation),
+    createDiffText(node.differenceInformation),
     {
-      left: x + number.dx - 10 + width + 30,
-      top: y + number.dy - 10,
+      left: x + offsetCoordinates.dx - 10 + width + 30,
+      top: y + offsetCoordinates.dy - 10,
       width: 400,
       fontFamily: "Noto Sans KR",
       fontWeight: 600,
       fontStyle: "normal",
       textAlign: "left",
       fontSize: 20,
-      fill: "rgba(255, 255, 255, 1)",
+      lineHeight: 1.2,
       backgroundColor: "rgba(0, 0, 0, 0.8)",
       opacity: 0.8,
-      lineHeight: 1.2,
+      fill: "rgba(255, 255, 255, 1)",
       hasBorders: true,
       borderColor: "rgba(0, 0, 0, 0.8)",
       visible: false,
@@ -258,12 +261,12 @@ const renderDifference = (el, number) => {
   return [diffRect, diffContent];
 };
 
-const renderNewFrame = (el, number) => {
-  const { x, y, width, height } = el.position;
+const renderNewFrame = (node, offsetCoordinates) => {
+  const { x, y, width, height } = node.position;
 
   const diffRect = new fabric.Rect({
-    left: x + number.dx - 10,
-    top: y + number.dy - 10,
+    left: x + offsetCoordinates.dx - 10,
+    top: y + offsetCoordinates.dy - 10,
     width: width + 20,
     height: height + 20,
     fill: "rgba(3, 148, 16, 0)",
@@ -275,22 +278,22 @@ const renderNewFrame = (el, number) => {
   });
 
   const diffContent = new fabric.Textbox(
-    createDiffText(el.differenceInformation),
+    createDiffText(node.differenceInformation),
     {
-      left: x + number.dx - 10 + width + 30,
-      top: y + number.dy - 10,
-      rx: 10,
-      ry: 10,
+      left: x + offsetCoordinates.dx - 10 + width + 30,
+      top: y + offsetCoordinates.dy - 10,
       width: 400,
       fontFamily: "Noto Sans KR",
       fontWeight: 600,
       fontStyle: "normal",
       textAlign: "left",
       fontSize: 12,
-      fill: "rgba(255, 255, 255, 1)",
+      lineHeight: 1.2,
       backgroundColor: "rgba(0, 0, 0, 0.8)",
       opacity: 0.85,
-      lineHeight: 1.2,
+      fill: "rgba(255, 255, 255, 1)",
+      rx: 10,
+      ry: 10,
       hasBorders: true,
       borderColor: "rgba(0, 0, 0, 0.8)",
       visible: false,
@@ -300,12 +303,12 @@ const renderNewFrame = (el, number) => {
   return [diffRect, diffContent];
 };
 
-const renderNewFrameInfo = (el, number) => {
-  const { x, y, width, height } = el.property.absoluteBoundingBox;
+const renderNewFrameInfo = (node, offsetCoordinates) => {
+  const { x, y, width, height } = node.property.absoluteBoundingBox;
 
   const diffRect = new fabric.Rect({
-    left: x + number.dx - 10,
-    top: y + number.dy - 10,
+    left: x + offsetCoordinates.dx - 10,
+    top: y + offsetCoordinates.dy - 10,
     width: width + 20,
     height: height + 20,
     fill: "rgba(3, 148, 16, 0)",
@@ -317,25 +320,25 @@ const renderNewFrameInfo = (el, number) => {
   });
 
   const diffContent = new fabric.Textbox("새로 생성된 프레임 입니다.", {
-    left: x + number.dx - 10 + width + 30,
-    top: y + number.dy - 10,
-    rx: 10,
-    ry: 10,
+    left: x + offsetCoordinates.dx - 10 + width + 30,
+    top: y + offsetCoordinates.dy - 10,
     width: 200,
     padding: 20,
-    isWrapping: true,
-    splitByGrapheme: true,
     fontFamily: "Noto Sans KR",
     fontWeight: 500,
     fontStyle: "normal",
     textAlign: "left",
     fontSize: 16,
-    fill: "rgba(255, 255, 255, 1)",
+    lineHeight: 1.2,
     backgroundColor: "rgba(0, 0, 0, 0.8)",
     opacity: 0.85,
-    lineHeight: 1.2,
-    hasBorders: true,
+    fill: "rgba(255, 255, 255, 1)",
     borderColor: "rgba(0, 0, 0, 0.8)",
+    rx: 10,
+    ry: 10,
+    isWrapping: true,
+    splitByGrapheme: true,
+    hasBorders: true,
     visible: false,
   });
 
