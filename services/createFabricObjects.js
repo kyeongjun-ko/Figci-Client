@@ -1,5 +1,6 @@
 import { fabric } from "fabric";
 import createDiffText from "../utils/createDiffText";
+import FABRIC_RENDER from "../constants/renderConstants";
 
 fabric.Textbox.prototype.set({
   _getNonTransformedDimensions() {
@@ -14,7 +15,12 @@ fabric.Textbox.prototype.set({
   },
 });
 
-const renderImg = async (nodeJSON, offsetCoord) => {
+const convertColorString = colorObject => {
+  const { r, g, b, a } = colorObject;
+
+  return `rgba(${r * 255}, ${g * 255}, ${b * 255}, ${a})`;
+};
+const renderImage = async (nodeJSON, offsetCoordinates) => {
   const position = nodeJSON.property.absoluteBoundingBox;
 
   if (nodeJSON.type === "ELLIPSE") {
@@ -45,7 +51,7 @@ const renderImg = async (nodeJSON, offsetCoord) => {
       });
     };
 
-    const fabricImageObject = await imageObject(offsetCoord, position);
+    const fabricImageObject = await imageObject(offsetCoordinates, position);
 
     return fabricImageObject;
   }
@@ -79,17 +85,17 @@ const renderImg = async (nodeJSON, offsetCoord) => {
       });
     };
 
-    const fabricImageObject = await imageObject(offsetCoord, offsetCoord);
+    const fabricImageObject = await imageObject(offsetCoordinates, position);
 
     return fabricImageObject;
   }
 };
 
 const renderRect = async (node, offsetCoordinates) => {
-  const isExistImg = node.property.fills[0]?.imageRef ?? null;
+  const isExistImage = node.property.fills[0]?.imageRef ?? null;
 
-  if (isExistImg) {
-    const imageFabricObject = await renderImg(node, offsetCoordinates);
+  if (isExistImage) {
+    const imageFabricObject = await renderImage(node, offsetCoordinates);
 
     return imageFabricObject;
   }
@@ -104,13 +110,9 @@ const renderRect = async (node, offsetCoordinates) => {
     top: style.absoluteBoundingBox.y + offsetCoordinates.dy,
     width: style.absoluteBoundingBox.width,
     height: style.absoluteBoundingBox.height,
-    fill:
-      backgroundColor &&
-      `rgba(${backgroundColor.r * 255}, ${backgroundColor.g * 255}, ${backgroundColor.b * 255}, ${backgroundColor.a})`,
+    fill: backgroundColor && convertColorString(backgroundColor),
     opacity: style.fills[0]?.opacity,
-    stroke: strokes.length
-      ? `rgba(${strokes[0].color.r * 255}, ${strokes[0].color.g * 255}, ${strokes[0].color.b * 255}, ${strokes[0].color.a})`
-      : 0,
+    stroke: strokes.length ? convertColorString(strokes[0].color) : 0,
     strokeAlign: style.strokeAlign && style.strokeAlign,
     rx: style.cornerRadius || 0,
     ry: style.cornerRadius || 0,
@@ -130,13 +132,9 @@ const renderFrame = async (node, offsetCoordinates) => {
     top: style.absoluteBoundingBox.y + offsetCoordinates.dy,
     width: style.absoluteBoundingBox.width,
     height: style.absoluteBoundingBox.height,
-    fill:
-      backgroundColor &&
-      `rgba(${backgroundColor.r * 255}, ${backgroundColor.g * 255}, ${backgroundColor.b * 255}, ${backgroundColor.a})`,
+    fill: backgroundColor && convertColorString(backgroundColor),
     opacity: style.fills[0]?.opacity ?? backgroundColor.a,
-    stroke: strokes.length
-      ? `rgba(${strokes[0].color.r * 255}, ${strokes[0].color.g * 255}, ${strokes[0].color.b * 255}, ${strokes[0].color.a})`
-      : 0,
+    stroke: strokes.length ? convertColorString(strokes[0].color) : 0,
     strokeAlign: style.strokeAlign,
     rx: style.cornerRadius || 0,
     ry: style.cornerRadius || 0,
@@ -148,10 +146,10 @@ const renderFrame = async (node, offsetCoordinates) => {
 };
 
 const renderEllipse = async (node, offsetCoordinates) => {
-  const isExistImg = node.property.fills[0]?.imageRef ?? null;
+  const isExistImage = node.property.fills[0]?.imageRef ?? null;
 
-  if (isExistImg) {
-    const imageFabricObject = await renderImg(node, offsetCoordinates);
+  if (isExistImage) {
+    const imageFabricObject = await renderImage(node, offsetCoordinates);
 
     return imageFabricObject;
   }
@@ -165,12 +163,8 @@ const renderEllipse = async (node, offsetCoordinates) => {
     top: style.absoluteBoundingBox.y + offsetCoordinates.dy,
     rx: style.absoluteBoundingBox.width / 2,
     ry: style.absoluteBoundingBox.height / 2,
-    fill:
-      backgroundColor &&
-      `rgba(${backgroundColor.r * 255}, ${backgroundColor.g * 255}, ${backgroundColor.b * 255}, ${backgroundColor.a})`,
-    stroke: strokes.length
-      ? `rgba(${strokes[0].color.r * 255}, ${strokes[0].color.g * 255}, ${strokes[0].color.b * 255}, ${strokes[0].color.a})`
-      : 0,
+    fill: backgroundColor && convertColorString(backgroundColor),
+    stroke: strokes.length ? convertColorString(strokes[0].color) : 0,
     strokeAlign: style.strokeAlign && style.strokeAlign,
     angle: style.property?.arcData?.endingAngle,
     visible: true,
@@ -191,13 +185,9 @@ const renderText = (node, offsetCoordinates) => {
     fontFamily: style.style.fontFamily,
     fontWeight: style.style.fontWeight,
     textAlign: style.style.textAlignHorizontal.toLowerCase(),
-    lineHeight: 1.2,
-    fill:
-      backgroundColor &&
-      `rgba(${backgroundColor.r * 255}, ${backgroundColor.g * 255}, ${backgroundColor.b * 255}, ${backgroundColor.a})`,
-    stroke: strokes.length
-      ? `rgba(${strokes[0].color.r * 255}, ${strokes[0].color.g * 255}, ${strokes[0].color.b * 255}, ${strokes[0].color.a})`
-      : 0,
+    lineHeight: FABRIC_RENDER.TEXT_LINE_HEIGHT,
+    fill: backgroundColor && convertColorString(backgroundColor),
+    stroke: strokes.length ? convertColorString(strokes[0].color) : 0,
     strokeWidth: style.strokeWeight && style.strokeWeight,
     strokeDashArray: style.strokeAlign && style.strokeDashes,
     strokeLineCap: style.strokeLineCap && style.strokeLineCap,
@@ -215,7 +205,7 @@ const renderTriangle = (node, offsetCoordinates) => {
     top: position.y + offsetCoordinates.dy,
     width: position.width,
     height: style.rotation > 0 ? position.height : -position.height,
-    fill: `rgba(${style.fills[0].color.r * 255}, ${style.fills[0].color.g * 255}, ${style.fills[0].color.b * 255}, ${style.fills[0].color.a})`,
+    fill: convertColorString(style.fills[0].color),
     strokeWidth: style.strokeWeight,
   });
 };
@@ -228,8 +218,8 @@ const renderDifference = (node, offsetCoordinates) => {
     top: y + offsetCoordinates.dy - 15,
     width: width + 20,
     height: height + 20,
-    fill: "rgba(180, 46, 46, 0)",
-    stroke: "rgba(243, 7, 7, 0.7)",
+    fill: FABRIC_RENDER.CHANGE_RECT_COLOR,
+    stroke: FABRIC_RENDER.CHANGE_RECT_STROKE,
     strokeWidth: 2,
     strokeOpacity: 1,
     rx: 5,
@@ -242,18 +232,17 @@ const renderDifference = (node, offsetCoordinates) => {
     {
       left: x + offsetCoordinates.dx - 10 + width + 30,
       top: y + offsetCoordinates.dy - 10,
-      width: 400,
-      fontFamily: "Noto Sans KR",
-      fontWeight: 600,
-      fontStyle: "normal",
-      textAlign: "left",
-      fontSize: 20,
-      lineHeight: 1.2,
-      backgroundColor: "rgba(0, 0, 0, 0.8)",
+      width: FABRIC_RENDER.TEXTBOX_WIDTH,
+      fontFamily: FABRIC_RENDER.TEXT_FAMILY,
+      fontWeight: FABRIC_RENDER.TEXT_WEIGHT,
+      fontSize: FABRIC_RENDER.TEXT_SIZE,
+      lineHeight: FABRIC_RENDER.TEXT_LINE_HEIGHT,
+      padding: FABRIC_RENDER.TEXT_PADDING,
+      textBackgroundColor: FABRIC_RENDER.TEXT_BACKGROUND_COLOR,
       opacity: 0.8,
-      fill: "rgba(255, 255, 255, 1)",
+      fill: FABRIC_RENDER.TEXT_COLOR,
       hasBorders: true,
-      borderColor: "rgba(0, 0, 0, 0.8)",
+      borderColor: "rgba(0, 0, 0, 1)",
       visible: false,
     },
   );
@@ -269,8 +258,8 @@ const renderNewFrame = (node, offsetCoordinates) => {
     top: y + offsetCoordinates.dy - 10,
     width: width + 20,
     height: height + 20,
-    fill: "rgba(3, 148, 16, 0)",
-    stroke: "rgba(3, 148, 16, 0.7)",
+    fill: FABRIC_RENDER.NEW_RECT_COLOR,
+    stroke: FABRIC_RENDER.NEW_RECT_STROKE,
     strokeWidth: 2,
     strokeOpacity: 1,
     rx: 5,
@@ -282,20 +271,20 @@ const renderNewFrame = (node, offsetCoordinates) => {
     {
       left: x + offsetCoordinates.dx - 10 + width + 30,
       top: y + offsetCoordinates.dy - 10,
-      width: 400,
-      fontFamily: "Noto Sans KR",
-      fontWeight: 600,
-      fontStyle: "normal",
-      textAlign: "left",
-      fontSize: 12,
-      lineHeight: 1.2,
-      backgroundColor: "rgba(0, 0, 0, 0.8)",
+      width: FABRIC_RENDER.TEXTBOX_WIDTH,
+      fontFamily: FABRIC_RENDER.TEXT_FAMILY,
+      fontWeight: FABRIC_RENDER.TEXT_WEIGHT,
+      fontSize: FABRIC_RENDER.TEXT_SIZE,
+      lineHeight: FABRIC_RENDER.TEXT_LINE_HEIGHT,
+      padding: FABRIC_RENDER.TEXT_PADDING,
+      textBackgroundColor: FABRIC_RENDER.TEXT_BACKGROUND_COLOR,
       opacity: 0.85,
-      fill: "rgba(255, 255, 255, 1)",
+      fill: FABRIC_RENDER.TEXT_COLOR,
       rx: 10,
       ry: 10,
+      borderColor: "rgba(0, 0, 0, 1)",
+      isWrapping: true,
       hasBorders: true,
-      borderColor: "rgba(0, 0, 0, 0.8)",
       visible: false,
     },
   );
@@ -311,8 +300,8 @@ const renderNewFrameInfo = (node, offsetCoordinates) => {
     top: y + offsetCoordinates.dy - 10,
     width: width + 20,
     height: height + 20,
-    fill: "rgba(3, 148, 16, 0)",
-    stroke: "rgba(3, 148, 16, 0.7)",
+    fill: FABRIC_RENDER.NEW_RECT_COLOR,
+    stroke: FABRIC_RENDER.NEW_RECT_STROKE,
     strokeWidth: 2,
     strokeOpacity: 1,
     rx: 5,
@@ -322,22 +311,20 @@ const renderNewFrameInfo = (node, offsetCoordinates) => {
   const diffContent = new fabric.Textbox("새로 생성된 프레임 입니다.", {
     left: x + offsetCoordinates.dx - 10 + width + 30,
     top: y + offsetCoordinates.dy - 10,
-    width: 200,
-    padding: 20,
-    fontFamily: "Noto Sans KR",
-    fontWeight: 500,
-    fontStyle: "normal",
-    textAlign: "left",
-    fontSize: 16,
-    lineHeight: 1.2,
-    backgroundColor: "rgba(0, 0, 0, 0.8)",
-    opacity: 0.85,
-    fill: "rgba(255, 255, 255, 1)",
-    borderColor: "rgba(0, 0, 0, 0.8)",
+    width: FABRIC_RENDER.TEXTBOX_WIDTH,
+    fontFamily: FABRIC_RENDER.TEXT_FAMILY,
+    fontWeight: FABRIC_RENDER.TEXT_WEIGHT,
+    textAlign: FABRIC_RENDER.TEXT_ALIGN,
+    fontSize: FABRIC_RENDER.TEXT_SIZE,
+    lineHeight: FABRIC_RENDER.TEXT_LINE_HEIGHT,
+    padding: FABRIC_RENDER.TEXT_PADDING,
+    textBackgroundColor: FABRIC_RENDER.TEXT_BACKGROUND_COLOR,
+    opacity: FABRIC_RENDER.TEXTBOX_OPACITY,
+    fill: FABRIC_RENDER.TEXT_COLOR,
+    borderColor: "rgba(0, 0, 0, 1)",
     rx: 10,
     ry: 10,
-    isWrapping: true,
-    splitByGrapheme: true,
+    isWrapping: false,
     hasBorders: true,
     visible: false,
   });
