@@ -186,7 +186,7 @@ const renderText = (node, offsetCoordinates) => {
     left: style.absoluteBoundingBox.x + offsetCoordinates.dx,
     top: style.absoluteBoundingBox.y + offsetCoordinates.dy,
     width: style.absoluteBoundingBox.width,
-    // height: style.style.lineHeightPx,
+    height: style.style.lineHeightPx,
     fontSize: style.style.fontSize,
     fontFamily: style.style.fontFamily,
     fontWeight: style.style.fontWeight,
