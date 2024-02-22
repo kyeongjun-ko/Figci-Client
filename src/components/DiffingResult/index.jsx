@@ -214,6 +214,7 @@ function DiffingResult() {
       }
 
       renderFabricOnCanvas(diffingResult.content);
+
       canvasRef.current.renderAll();
     }
   }, [frameId]);

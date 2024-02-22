@@ -87,9 +87,10 @@ const renderFabricFrame = async function (frameJSON, imageUrl) {
   }
 
   const fabricObjectArray = [...fabricObject.values()];
-  const objectGroup = new fabric.Group(fabricObjectArray);
 
-  this.add(objectGroup);
+  fabricObjectArray.forEach(fabricObject => {
+    this.add(fabricObject);
+  });
 };
 
 export default renderFabricFrame;

@@ -35,6 +35,7 @@ const renderImage = async (nodeJSON, offsetCoordinates) => {
           rx: width / 2,
           ry: height / 2,
           absolutePositioned: true,
+          selectable: false,
         });
 
         fabric.Image.fromURL(nodeJSON.property.imageURL, fabricImage => {
@@ -69,12 +70,14 @@ const renderImage = async (nodeJSON, offsetCoordinates) => {
           rx: nodeJSON.property?.cornerRadius,
           ry: nodeJSON.property?.cornerRadius,
           absolutePositioned: true,
+          selectable: false,
         });
 
         fabric.Image.fromURL(nodeJSON.property.imageURL, fabricImage => {
           fabricImage.set({
             left: x + offsetCoordinates.dx,
             top: y + offsetCoordinates.dy,
+            selectable: false,
           });
 
           fabricImage.scaleToWidth(width);
@@ -118,6 +121,7 @@ const renderRect = async (node, offsetCoordinates) => {
     ry: style.cornerRadius || 0,
     visible: true,
     evented: true,
+    selectable: false,
   });
 };
 
@@ -140,6 +144,7 @@ const renderFrame = async (node, offsetCoordinates) => {
     ry: style.cornerRadius || 0,
     visible: true,
     evented: true,
+    selectable: false,
   });
 
   return frameObject;
@@ -166,8 +171,9 @@ const renderEllipse = async (node, offsetCoordinates) => {
     fill: backgroundColor && convertColorString(backgroundColor),
     stroke: strokes.length ? convertColorString(strokes[0].color) : 0,
     strokeAlign: style.strokeAlign && style.strokeAlign,
-    angle: style.property?.arcData?.endingAngle,
+    angle: style.arcData?.endingAngle,
     visible: true,
+    selectable: false,
   });
 };
 
@@ -176,7 +182,7 @@ const renderText = (node, offsetCoordinates) => {
   const backgroundColor = style.fills[0]?.color;
   const { strokes } = style;
 
-  return new fabric.Textbox(style.characters, {
+  const fabricTextObject = new fabric.Textbox(style.characters, {
     left: style.absoluteBoundingBox.x + offsetCoordinates.dx,
     top: style.absoluteBoundingBox.y + offsetCoordinates.dy,
     width: style.absoluteBoundingBox.width,
@@ -193,7 +199,10 @@ const renderText = (node, offsetCoordinates) => {
     strokeLineCap: style.strokeLineCap && style.strokeLineCap,
     strokeLineJoin: style.strokeJoin && style.strokeJoin,
     verticalAlign: style.style.textAlignVertical.toLowerCase(),
+    selectable: false,
   });
+
+  return fabricTextObject;
 };
 
 const renderTriangle = (node, offsetCoordinates) => {
@@ -207,6 +216,7 @@ const renderTriangle = (node, offsetCoordinates) => {
     height: style.rotation > 0 ? position.height : -position.height,
     fill: convertColorString(style.fills[0].color),
     strokeWidth: style.strokeWeight,
+    selectable: false,
   });
 };
 
@@ -225,6 +235,7 @@ const renderDifference = (node, offsetCoordinates) => {
     ry: 5,
     evented: true,
     hasBorders: true,
+    selectable: false,
   });
 
   const diffContent = new fabric.Textbox(
@@ -244,6 +255,7 @@ const renderDifference = (node, offsetCoordinates) => {
       hasBorders: true,
       borderColor: "rgba(0, 0, 0, 1)",
       visible: false,
+      selectable: false,
     },
   );
 
@@ -265,6 +277,7 @@ const renderNewFrame = (node, offsetCoordinates) => {
     rx: 5,
     ry: 5,
     hasBorders: true,
+    selectable: false,
   });
 
   const diffContent = new fabric.Textbox(
@@ -287,6 +300,7 @@ const renderNewFrame = (node, offsetCoordinates) => {
       isWrapping: true,
       hasBorders: true,
       visible: false,
+      selectable: false,
     },
   );
 
@@ -307,6 +321,7 @@ const renderNewFrameInfo = (node, offsetCoordinates) => {
     strokeOpacity: 1,
     rx: 5,
     ry: 5,
+    selectable: false,
   });
 
   const diffContent = new fabric.Textbox("새로 생성된 프레임 입니다.", {
@@ -327,6 +342,7 @@ const renderNewFrameInfo = (node, offsetCoordinates) => {
     isWrapping: false,
     hasBorders: true,
     visible: false,
+    selectable: false,
   });
 
   return [diffRect, diffContent];
@@ -346,6 +362,7 @@ const renderFunctionByFigmaType = {
   RECTANGLE: renderRect,
   TEXT: renderText,
   VECTOR: renderRect,
+  LINE: renderRect,
 };
 
 const createFabric = async (figmaNode, offsetCoordinates) => {
